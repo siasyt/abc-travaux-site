@@ -1,8 +1,8 @@
 ---
 // =========================================================
 // 法律类页面通用模板（法律声明 / 隐私政策）
-// 左侧：标题 + 更新日期（滚动时固定）
-// 右侧：各章节内容
+// 上：标题 + 更新日期（占满整行，长标题也不会挤到正文）
+// 下：各章节内容
 // =========================================================
 import type { LegalPageText } from "../../i18n/pages/legal";
 
@@ -17,7 +17,7 @@ const { page } = Astro.props;
     <span class="watermark legal-watermark" aria-hidden="true">ABC</span>
 
     <div class="container legal-grid">
-        <!-- 左侧标题 -->
+        <!-- 标题 -->
         <header class="legal-head">
             <span class="eyebrow">{page.eyebrow}</span>
             <h1 class="display-title legal-title">{page.title}</h1>
@@ -26,7 +26,7 @@ const { page } = Astro.props;
             {page.note && <p class="legal-note">{page.note}</p>}
         </header>
 
-        <!-- 右侧内容 -->
+        <!-- 正文 -->
         <div class="legal-body">
             {
                 page.sections.map((s) => (
@@ -48,25 +48,24 @@ const { page } = Astro.props;
 
     .legal-grid {
         display: grid;
-        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
-        gap: clamp(2.5rem, 6vw, 6rem);
-        align-items: start;
+        gap: var(--space-lg);
     }
 
-    /* ---------- 左侧：滚动时固定 ---------- */
+    /* ---------- 标题 ---------- */
     .legal-head {
-        position: sticky;
-        top: calc(80px + var(--space-md));
+        max-width: 900px;
     }
 
     .legal-title {
         margin-top: var(--space-sm);
-        font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+        font-size: clamp(2rem, 5vw, 4rem);
         line-height: 1.05;
+        overflow-wrap: break-word;
     }
 
     .legal-rule {
         display: block;
+        width: min(100%, 420px);
         height: 1px;
         margin-block: var(--space-sm);
         background: var(--c-ink);
@@ -79,6 +78,7 @@ const { page } = Astro.props;
     }
 
     .legal-note {
+        max-width: 760px;
         margin-top: var(--space-sm);
         padding: 0.9rem 1rem;
         border-left: 2px solid var(--c-orange);
@@ -87,7 +87,7 @@ const { page } = Astro.props;
         line-height: 1.7;
     }
 
-    /* ---------- 右侧内容 ---------- */
+    /* ---------- 正文 ---------- */
     .legal-body {
         display: grid;
         gap: var(--space-md);
@@ -149,15 +149,10 @@ const { page } = Astro.props;
         text-underline-offset: 3px;
     }
 
-    /* ---------- 平板 / 手机 ---------- */
-    @media (max-width: 900px) {
-        .legal-grid {
-            grid-template-columns: 1fr;
-            gap: var(--space-lg);
-        }
-
-        .legal-head {
-            position: static;
+    /* ---------- 手机 ---------- */
+    @media (max-width: 560px) {
+        .legal-title {
+            font-size: clamp(1.6rem, 8vw, 2.25rem);
         }
     }
 </style>
