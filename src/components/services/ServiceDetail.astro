@@ -1,0 +1,346 @@
+---
+// =========================================================
+// 服务详情（对应 PDF 第 4、5 页，两页结构相同、左右镜像）
+// 一侧：介绍段落 + 分类标签 + 图片（右对齐）
+// 另一侧：大标题 + 斜体副标题 + 3 个要点
+// 两侧之间一条竖线
+//
+// 参数：
+//   item     服务数据（services.ts 里的一项）
+//   eyebrow  左上角小标签
+//   lead     斜体副标题
+//   dark     true = 深棕底（Retail），false = 白底（Hospitality）
+//   reverse  true = 标题放左边（Hospitality）
+// =========================================================
+interface Point {
+    title: string;
+    text: string;
+}
+
+interface Props {
+    item: {
+        id: string;
+        title: string[];
+        image: string;
+        intro: string[];
+        tags: string;
+        tagline: string;
+        points: Point[];
+    };
+    eyebrow: string;
+    lead: string;
+    dark?: boolean;
+    reverse?: boolean;
+}
+
+const { item, eyebrow, lead, dark = false, reverse = false } = Astro.props;
+---
+
+<section
+    class:list={[
+        "section",
+        "svc",
+        { "section--dark": dark, "svc--reverse": reverse },
+    ]}
+    id={item.id}
+>
+    {
+        !dark && (
+            <span class="watermark svc-watermark" aria-hidden="true">
+                ABC
+            </span>
+        )
+    }
+    <span class="vertical-url">www.abc-travaux.com</span>
+
+    <div class="container">
+        <span class="eyebrow svc-eyebrow" data-reveal>{eyebrow}</span>
+
+        <div class="svc-grid">
+            <!-- ========== 介绍侧 ========== -->
+            <div class="svc-intro">
+                {
+                    item.intro.map((p, i) => (
+                        <p
+                            class="svc-intro-p"
+                            data-reveal
+                            data-reveal-delay={i * 150}
+                            set:html={p}
+                        />
+                    ))
+                }
+
+                <div class="svc-media" data-reveal data-reveal-delay="300">
+                    <div class="svc-tags">
+                        <p class="svc-tags-main">{item.tags}</p>
+                        <p class="svc-tags-sub">{item.tagline}</p>
+                    </div>
+                    <div class="svc-image">
+                        <img
+                            src={item.image}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 标题侧 ========== -->
+            <div class="svc-main">
+                <h2 class="display-title svc-title">
+                    <span data-reveal>{item.title[0]}</span>
+                    <span data-reveal data-reveal-delay="120"
+                        >{item.title[1]}</span
+                    >
+                </h2>
+                <p
+                    class="svc-lead"
+                    data-reveal
+                    data-reveal-delay="250"
+                    set:html={lead}
+                />
+
+                <ul class="svc-points">
+                    {
+                        item.points.map((pt, i) => (
+                            <li data-reveal data-reveal-delay={350 + i * 120}>
+                                <strong>{pt.title}</strong>
+                                <span>{pt.text}</span>
+                            </li>
+                        ))
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* 锚点跳转时，留出顶部导航栏的高度 */
+    .svc {
+        scroll-margin-top: 80px;
+    }
+
+    .svc-watermark {
+        left: -3rem;
+        top: -2rem;
+    }
+
+    .svc-eyebrow {
+        margin-bottom: var(--space-md);
+    }
+
+    .svc-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+    }
+
+    /* ---------- 介绍侧（默认在左） ---------- */
+    .svc-intro {
+        padding-right: clamp(2rem, 4vw, 4rem);
+        border-right: 1px solid currentColor;
+        text-align: right;
+    }
+
+    .svc-intro-p {
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.85;
+    }
+
+    .svc-intro-p + .svc-intro-p {
+        margin-top: var(--space-sm);
+    }
+
+    .svc-intro-p :global(mark) {
+        background: none;
+        color: var(--c-orange);
+    }
+
+    /* 分类标签 + 图片 */
+    .svc-media {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+        gap: var(--space-sm);
+        align-items: end;
+        margin-top: var(--space-md);
+    }
+
+    .svc-tags {
+        text-align: right;
+    }
+
+    .svc-tags-main {
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.6;
+        color: var(--c-orange);
+    }
+
+    .svc-tags-sub {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.6;
+    }
+
+    .svc-image {
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: 10px;
+    }
+
+    .svc-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .svc-image:hover img {
+        transform: scale(1.06);
+    }
+
+    /* ---------- 标题侧（默认在右） ---------- */
+    .svc-main {
+        padding-left: clamp(2rem, 4vw, 4rem);
+    }
+
+    .svc-title {
+        display: flex;
+        flex-wrap: wrap;
+        column-gap: 0.3em;
+        font-size: clamp(2.25rem, 4.5vw, 4rem);
+    }
+
+    .svc-lead {
+        margin-top: 0.5rem;
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.7;
+        text-align: right;
+    }
+
+    .svc-points {
+        display: grid;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+    }
+
+    .svc-points li {
+        position: relative;
+        padding-left: 1.1rem;
+        font-size: 0.9rem;
+        line-height: 1.8;
+    }
+
+    .svc-points li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.75em;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    .svc-points strong {
+        font-style: italic;
+        color: var(--c-orange);
+    }
+
+    .svc-points strong::after {
+        content: " : ";
+    }
+
+    :global(html[lang="zh"]) .svc-points strong::after {
+        content: "：";
+    }
+
+    .section--dark .svc-points span {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* ---------- 镜像版（Hospitality：标题在左） ---------- */
+    .svc--reverse .svc-main {
+        order: -1;
+        padding-left: 0;
+        padding-right: clamp(2rem, 4vw, 4rem);
+    }
+
+    .svc--reverse .svc-title {
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    .svc--reverse .svc-intro {
+        padding-right: 0;
+        padding-left: clamp(2rem, 4vw, 4rem);
+        border-right: none;
+        border-left: 1px solid currentColor;
+        text-align: center;
+    }
+
+    .svc--reverse .svc-media {
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    }
+
+    .svc--reverse .svc-tags {
+        order: 1;
+        text-align: left;
+    }
+
+    /* ---------- 平板 / 手机：上下排列，标题在上 ---------- */
+    @media (max-width: 960px) {
+        .svc-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .svc-main,
+        .svc--reverse .svc-main {
+            order: -1;
+            padding: 0;
+        }
+
+        .svc-intro,
+        .svc--reverse .svc-intro {
+            padding: var(--space-md) 0 0;
+            border: none;
+            border-top: 1px solid currentColor;
+            text-align: left;
+        }
+
+        .svc--reverse .svc-title {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .svc-lead {
+            text-align: left;
+        }
+
+        .svc-lead :global(br) {
+            display: none;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .svc-media,
+        .svc--reverse .svc-media {
+            grid-template-columns: 1fr;
+        }
+
+        .svc-tags,
+        .svc--reverse .svc-tags {
+            order: 1;
+            text-align: left;
+        }
+    }
+</style>

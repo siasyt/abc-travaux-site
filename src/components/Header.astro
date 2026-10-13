@@ -1,0 +1,458 @@
+---
+// =========================================================
+// 顶部导航栏：Logo + 菜单 + 语言切换 + 报价按钮
+// 手机端：汉堡按钮 + 全屏深棕菜单
+// =========================================================
+import {
+    getLangFromUrl,
+    useTranslations,
+    localePath,
+    switchLangPath,
+    languages,
+    type Lang,
+    type UiKey,
+} from "../i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+// 导航项：文案 key + 网址后缀（中法两边后缀相同）
+const navItems: { key: UiKey; path: string }[] = [
+    { key: "nav.home", path: "" },
+    { key: "nav.about", path: "a-propos" },
+    { key: "nav.services", path: "services" },
+    { key: "nav.projects", path: "realisations" },
+    { key: "nav.contact", path: "contact" },
+];
+
+// 判断当前页面，用于高亮
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isActive = (path: string) =>
+    localePath(lang, path).replace(/\/+$/, "") === current;
+
+const langList = Object.keys(languages) as Lang[];
+---
+
+<header class="site-header" data-header>
+    <div class="container header-inner">
+        <!-- Logo -->
+        <a class="header-logo" href={localePath(lang)} aria-label="ABC Travaux">
+            <img
+                src="/images/brand/logo-abc.png"
+                alt="ABC Travaux"
+                width="120"
+                height="44"
+            />
+        </a>
+
+        <!-- 桌面端菜单 -->
+        <nav class="header-nav" aria-label="Navigation principale">
+            <ul>
+                {
+                    navItems.map((item) => (
+                        <li>
+                            <a
+                                href={localePath(lang, item.path)}
+                                class:list={[
+                                    "nav-link",
+                                    { "is-active": isActive(item.path) },
+                                ]}
+                                aria-current={
+                                    isActive(item.path) ? "page" : undefined
+                                }
+                            >
+                                {t(item.key)}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+
+        <!-- 右侧：语言切换 + 按钮 -->
+        <div class="header-actions">
+            <div class="lang-switch">
+                {
+                    langList.map((l, i) => (
+                        <>
+                            {i > 0 && <span class="lang-sep">/</span>}
+                            <a
+                                href={switchLangPath(Astro.url, l)}
+                                class:list={[
+                                    "lang-link",
+                                    { "is-active": l === lang },
+                                ]}
+                                hreflang={l}
+                                lang={l}
+                            >
+                                {languages[l]}
+                            </a>
+                        </>
+                    ))
+                }
+            </div>
+            <a
+                class="btn btn--primary header-cta"
+                href={localePath(lang, "contact")}
+            >
+                {t("nav.cta")}
+            </a>
+
+            <!-- 手机端汉堡按钮 -->
+            <button
+                class="menu-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-controls="mobile-menu"
+                aria-label={t("nav.menu")}
+                data-menu-toggle
+            >
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 手机端全屏菜单 -->
+    <div class="mobile-menu" id="mobile-menu" data-mobile-menu>
+        <span class="watermark mobile-watermark" aria-hidden="true">ABC</span>
+        <nav class="container mobile-nav" aria-label="Navigation mobile">
+            <ul>
+                {
+                    navItems.map((item, i) => (
+                        <li style={`--i:${i}`}>
+                            <a
+                                href={localePath(lang, item.path)}
+                                class:list={[
+                                    "mobile-link",
+                                    { "is-active": isActive(item.path) },
+                                ]}
+                            >
+                                <span class="mobile-index">0{i + 1}</span>
+                                {t(item.key)}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+            <div class="mobile-footer">
+                <div class="lang-switch">
+                    {
+                        langList.map((l, i) => (
+                            <>
+                                {i > 0 && <span class="lang-sep">/</span>}
+                                <a
+                                    href={switchLangPath(Astro.url, l)}
+                                    class:list={[
+                                        "lang-link",
+                                        { "is-active": l === lang },
+                                    ]}
+                                    hreflang={l}
+                                    lang={l}
+                                >
+                                    {languages[l]}
+                                </a>
+                            </>
+                        ))
+                    }
+                </div>
+                <a class="btn btn--primary" href={localePath(lang, "contact")}
+                    >{t("nav.cta")}</a
+                >
+            </div>
+        </nav>
+    </div>
+</header>
+
+<style>
+    .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--c-white);
+        border-bottom: 1px solid transparent;
+        transition:
+            border-color 0.4s var(--ease),
+            box-shadow 0.4s var(--ease);
+    }
+
+    /* 滚动后出现细线和阴影 */
+    .site-header.is-scrolled {
+        border-bottom-color: var(--c-line);
+        box-shadow: 0 6px 24px rgba(53, 43, 34, 0.06);
+    }
+
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+        height: 80px;
+    }
+
+    .header-logo img {
+        width: auto;
+        height: 36px;
+    }
+
+    /* ---------- 桌面菜单 ---------- */
+    .header-nav ul {
+        display: flex;
+        gap: clamp(1.25rem, 2.5vw, 2.5rem);
+    }
+
+    .nav-link {
+        position: relative;
+        display: inline-block;
+        padding-block: 0.4rem;
+        font-size: var(--fs-eyebrow);
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--c-ink);
+        transition: color 0.3s var(--ease);
+    }
+
+    /* 橙色下划线：悬停 / 当前页 */
+    .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 1px;
+        background: var(--c-orange-deep);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.5s var(--ease);
+    }
+
+    .nav-link:hover,
+    .nav-link.is-active {
+        color: var(--c-orange-deep);
+    }
+
+    .nav-link:hover::after,
+    .nav-link.is-active::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    /* ---------- 右侧 ---------- */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+
+    .lang-switch {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: var(--fs-eyebrow);
+        letter-spacing: 0.1em;
+    }
+
+    .lang-link {
+        color: var(--c-grey);
+        transition: color 0.3s var(--ease);
+    }
+
+    .lang-link:hover,
+    .lang-link.is-active {
+        color: var(--c-orange-deep);
+        font-weight: 700;
+    }
+
+    .lang-sep {
+        color: var(--c-line);
+    }
+
+    .header-cta {
+        padding: 0.7em 1.5em;
+        font-size: var(--fs-eyebrow);
+    }
+
+    /* ---------- 汉堡按钮 ---------- */
+    .menu-toggle {
+        display: none;
+        position: relative;
+        z-index: 2;
+        width: 32px;
+        height: 32px;
+    }
+
+    .menu-toggle span {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        height: 1.5px;
+        background: var(--c-ink);
+        transition:
+            transform 0.4s var(--ease),
+            top 0.4s var(--ease),
+            background 0.3s;
+    }
+
+    .menu-toggle span:nth-child(1) {
+        top: 11px;
+    }
+
+    .menu-toggle span:nth-child(2) {
+        top: 20px;
+    }
+
+    /* 打开后变成 X */
+    .menu-toggle[aria-expanded="true"] span {
+        background: var(--c-white);
+    }
+
+    .menu-toggle[aria-expanded="true"] span:nth-child(1) {
+        top: 15px;
+        transform: rotate(45deg);
+    }
+
+    .menu-toggle[aria-expanded="true"] span:nth-child(2) {
+        top: 15px;
+        transform: rotate(-45deg);
+    }
+
+    /* ---------- 手机全屏菜单 ---------- */
+    .mobile-menu {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        background: var(--c-brown);
+        color: var(--c-white);
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+            opacity 0.5s var(--ease),
+            visibility 0.5s;
+    }
+
+    .mobile-menu.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mobile-watermark {
+        right: -3rem;
+        bottom: -2rem;
+        color: rgba(255, 255, 255, 0.04);
+    }
+
+    .mobile-nav {
+        position: relative;
+        z-index: 1;
+    }
+
+    .mobile-nav li {
+        opacity: 0;
+        transform: translateY(24px);
+        transition:
+            opacity 0.6s var(--ease),
+            transform 0.6s var(--ease);
+        transition-delay: calc(var(--i) * 70ms);
+    }
+
+    .mobile-menu.is-open .mobile-nav li {
+        opacity: 1;
+        transform: none;
+    }
+
+    .mobile-link {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        padding-block: 0.6rem;
+        font-family: var(--f-display);
+        font-size: clamp(1.75rem, 7vw, 2.75rem);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-link.is-active {
+        color: var(--c-orange);
+    }
+
+    .mobile-index {
+        font-family: var(--f-body);
+        font-size: var(--fs-eyebrow);
+        letter-spacing: 0.2em;
+        color: var(--c-orange);
+    }
+
+    .mobile-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+    }
+
+    .mobile-footer .lang-link {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .mobile-footer .lang-link.is-active {
+        color: var(--c-orange);
+    }
+
+    /* ---------- 响应式 ---------- */
+    @media (max-width: 1024px) {
+        .header-nav,
+        .header-actions > .lang-switch,
+        .header-cta {
+            display: none;
+        }
+
+        .menu-toggle {
+            display: block;
+        }
+    }
+
+    @media (min-width: 1025px) {
+        .mobile-menu {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    // 滚动后给导航栏加阴影
+    const header = document.querySelector<HTMLElement>("[data-header]");
+    const onScroll = () =>
+        header?.classList.toggle("is-scrolled", window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // 手机菜单开关
+    const toggle =
+        document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+    const menu = document.querySelector<HTMLElement>("[data-mobile-menu]");
+
+    function setMenu(open: boolean) {
+        if (!toggle || !menu) return;
+        toggle.setAttribute("aria-expanded", String(open));
+        menu.classList.toggle("is-open", open);
+        document.documentElement.style.overflow = open ? "hidden" : "";
+    }
+
+    toggle?.addEventListener("click", () => {
+        setMenu(toggle.getAttribute("aria-expanded") !== "true");
+    });
+
+    // 点击菜单链接或按 Esc 时关闭
+    menu?.querySelectorAll("a").forEach((a) =>
+        a.addEventListener("click", () => setMenu(false)),
+    );
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setMenu(false);
+    });
+</script>

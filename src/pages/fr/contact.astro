@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ContactSection from "../../components/contact/ContactSection.astro";
+import { contact } from "../../i18n/pages/contact";
+
+const meta = contact.fr.meta;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+    <ContactSection />
+</BaseLayout>

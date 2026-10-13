@@ -1,0 +1,242 @@
+---
+// =========================================================
+// WE HAVE CONFIDENCE.（对应 PDF 第 19 页）
+// 左：寄语 + 项目图片 + 创始人姓名
+// 右：大标题 + 寄语诗句 + 签名 + "Bâtir avec le cœur" + 联系按钮
+// （联系方式已在页脚和联系页展示，这里不再重复）
+// =========================================================
+import { getLangFromUrl, localePath, site } from "../../i18n/ui";
+import { home } from "../../i18n/pages/home";
+
+const lang = getLangFromUrl(Astro.url);
+const c = home[lang].confidence;
+---
+
+<section class="section confidence" id="confidence">
+    <img
+        class="conf-watermark"
+        src="/images/brand/logo-abc.png"
+        alt=""
+        aria-hidden="true"
+        width="2000"
+        height="741"
+        loading="lazy"
+    />
+
+    <div class="container">
+        <span class="eyebrow conf-eyebrow" data-reveal>{c.eyebrow}</span>
+
+        <div class="conf-grid">
+            <!-- ========== 左侧 ========== -->
+            <div class="conf-left">
+                <p class="conf-lead" data-reveal set:html={c.lead} />
+                <span class="conf-rule" aria-hidden="true"></span>
+
+                <div class="conf-image" data-reveal data-reveal-delay="150">
+                    <img
+                        src={c.image}
+                        alt={c.imageAlt}
+                        loading="lazy"
+                        decoding="async"
+                    />
+                </div>
+
+                <div class="conf-person" data-reveal data-reveal-delay="250">
+                    <p class="display-title conf-name">
+                        <span>{c.name[0]}</span>
+                        <span>{c.name[1]}</span>
+                    </p>
+                    <span class="eyebrow">{c.role}</span>
+                </div>
+            </div>
+
+            <!-- ========== 右侧 ========== -->
+            <div class="conf-right">
+                <h2 class="display-title conf-title">
+                    <span data-reveal>{c.title[0]}</span>
+                    <span data-reveal data-reveal-delay="150">{c.title[1]}</span
+                    >
+                </h2>
+
+                <div class="conf-lines">
+                    {
+                        c.lines.map((line, i) => (
+                            <p data-reveal data-reveal-delay={200 + i * 90}>
+                                {line}
+                            </p>
+                        ))
+                    }
+                </div>
+
+                <p class="conf-signature" data-reveal>{c.signature}</p>
+
+                <p class="conf-slogan" data-reveal data-reveal-delay="150">
+                    "{site.slogan}"
+                </p>
+
+                <a
+                    class="btn btn--primary conf-cta"
+                    href={localePath(lang, "contact")}
+                    data-reveal
+                    data-reveal-delay="300"
+                >
+                    {c.cta}
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .conf-watermark {
+        position: absolute;
+        left: 22%;
+        top: 50%;
+        width: min(85vw, 1300px);
+        opacity: 0.07;
+        transform: translateY(-50%);
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .conf-eyebrow {
+        margin-bottom: var(--space-md);
+    }
+
+    .conf-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+        gap: clamp(2.5rem, 7vw, 7rem);
+    }
+
+    /* ---------- 左侧 ---------- */
+    .conf-left {
+        max-width: 420px;
+    }
+
+    .conf-lead {
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.7;
+    }
+
+    .conf-rule {
+        display: block;
+        height: 1px;
+        margin-block: var(--space-sm);
+        background: var(--c-ink);
+    }
+
+    /* 项目图片：圆角，悬停缓慢放大 */
+    .conf-image {
+        overflow: hidden;
+        aspect-ratio: 4 / 5;
+        border-radius: 12px;
+    }
+
+    .conf-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .conf-image:hover img {
+        transform: scale(1.05);
+    }
+
+    /* 姓名：右对齐，大号衬线 */
+    .conf-person {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-top: var(--space-sm);
+        text-align: right;
+    }
+
+    .conf-name {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: clamp(2.5rem, 4.5vw, 3.75rem);
+        line-height: 1;
+    }
+
+    .conf-person .eyebrow {
+        margin-top: 0.5rem;
+    }
+
+    /* ---------- 右侧 ---------- */
+    .conf-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+        text-align: right;
+    }
+
+    .conf-title {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: clamp(2.5rem, 5.5vw, 4.75rem);
+        line-height: 1.05;
+    }
+
+    .conf-lines {
+        margin-top: var(--space-md);
+        font-size: 0.95rem;
+        line-height: 1.9;
+    }
+
+    .conf-signature {
+        margin-top: var(--space-lg);
+        font-family: var(--f-display);
+        font-size: 1.25rem;
+        letter-spacing: 0.1em;
+    }
+
+    .conf-slogan {
+        margin-top: var(--space-md);
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+        color: var(--c-ink);
+    }
+
+    .conf-cta {
+        margin-top: var(--space-md);
+    }
+
+    /* ---------- 手机端 ---------- */
+    @media (max-width: 900px) {
+        .conf-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .conf-left {
+            max-width: none;
+        }
+
+        .conf-lead :global(br) {
+            display: none;
+        }
+
+        .conf-image {
+            aspect-ratio: 4 / 3;
+        }
+
+        .conf-right,
+        .conf-title {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .conf-watermark {
+            left: -10%;
+            width: 140vw;
+        }
+    }
+</style>

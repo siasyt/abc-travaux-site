@@ -1,0 +1,384 @@
+---
+// =========================================================
+// WHY US. 品牌矩阵（对应 PDF 第 10 页）
+// 左：标题 + 副标题 + 图片 + 标语
+// 右：3×3 卡片，中心 8 条线带箭头向外发散
+//     橙色像水位一样从下往上填充：底排 100%、中排 50%、顶排 0%
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { about } from "../../i18n/pages/about";
+
+const lang = getLangFromUrl(Astro.url);
+const c = about[lang].why;
+
+// 每一排的橙色填充比例
+const fillByRow = [0, 50, 100];
+
+// 8 个箭头：位置（百分比）+ 方向
+const arrows = [
+    { x: 0, y: 0, dir: "tl" },
+    { x: 50, y: 0, dir: "t" },
+    { x: 100, y: 0, dir: "tr" },
+    { x: 100, y: 50, dir: "r" },
+    { x: 100, y: 100, dir: "br" },
+    { x: 50, y: 100, dir: "b" },
+    { x: 0, y: 100, dir: "bl" },
+    { x: 0, y: 50, dir: "l" },
+];
+---
+
+<section class="section section--dark why" id="why-us">
+    <div class="container why-grid">
+        <!-- ========== 左侧 ========== -->
+        <div class="why-left">
+            <h1 class="display-title why-title" data-reveal>{c.title}</h1>
+            <span class="why-rule" aria-hidden="true"></span>
+            <p class="why-subtitle" data-reveal data-reveal-delay="150">
+                {c.subtitle}
+            </p>
+
+            <div class="why-image" data-reveal data-reveal-delay="250">
+                <img
+                    src={c.image}
+                    alt={c.imageAlt}
+                    loading="lazy"
+                    decoding="async"
+                />
+            </div>
+
+            <p class="why-tagline" data-reveal data-reveal-delay="350">
+                {c.tagline}
+            </p>
+        </div>
+
+        <!-- ========== 右侧矩阵 ========== -->
+        <div class="matrix" data-matrix>
+            <!-- 发散线条 -->
+            <svg
+                class="matrix-lines"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                {
+                    arrows.map((a) => (
+                        <line
+                            x1="50"
+                            y1="50"
+                            x2={a.x}
+                            y2={a.y}
+                            vector-effect="non-scaling-stroke"
+                        />
+                    ))
+                }
+            </svg>
+
+            <!-- 箭头 -->
+            {
+                arrows.map((a) => (
+                    <span
+                        class={`matrix-arrow matrix-arrow--${a.dir}`}
+                        style={`left:${a.x}%; top:${a.y}%;`}
+                        aria-hidden="true"
+                    />
+                ))
+            }
+
+            <!-- 9 张卡片 -->
+            <ul class="matrix-cards">
+                {
+                    c.matrix.map((item, i) => {
+                        const row = Math.floor(i / 3);
+                        return (
+                            <li
+                                class:list={[
+                                    "matrix-card",
+                                    `matrix-card--row${row}`,
+                                ]}
+                                style={`--fill:${fillByRow[row]}%; --delay:${300 + (2 - row) * 250}ms;`}
+                            >
+                                <h3 class="matrix-card-title">{item.title}</h3>
+                                <p
+                                    class="matrix-card-text"
+                                    set:html={item.text}
+                                />
+                            </li>
+                        );
+                    })
+                }
+            </ul>
+        </div>
+    </div>
+</section>
+
+<script>
+    // 根据矩阵实际宽高，计算斜线箭头的角度；进入视口后启动动画
+    function initMatrix() {
+        const matrix = document.querySelector<HTMLElement>("[data-matrix]");
+        if (!matrix) return;
+
+        const setAngle = () => {
+            const { width, height } = matrix.getBoundingClientRect();
+            const deg = (Math.atan2(width, height) * 180) / Math.PI;
+            matrix.style.setProperty("--diag", `${deg}deg`);
+        };
+        setAngle();
+        new ResizeObserver(setAngle).observe(matrix);
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (!e.isIntersecting) return;
+                    matrix.classList.add("is-active");
+                    io.disconnect();
+                });
+            },
+            { threshold: 0.25 },
+        );
+        io.observe(matrix);
+    }
+
+    initMatrix();
+</script>
+
+<style>
+    .why-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: clamp(2.5rem, 6vw, 6rem);
+        align-items: center;
+    }
+
+    /* ---------- 左侧 ---------- */
+    .why-title {
+        font-size: clamp(2.75rem, 6vw, 5rem);
+    }
+
+    .why-rule {
+        display: block;
+        height: 1px;
+        margin-block: var(--space-sm);
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .why-subtitle {
+        font-family: var(--f-display);
+        font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+    }
+
+    .why-image {
+        overflow: hidden;
+        margin-top: var(--space-lg);
+        border-radius: 12px;
+        aspect-ratio: 4 / 3;
+    }
+
+    .why-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .why-tagline {
+        margin-top: var(--space-md);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    /* ---------- 矩阵 ---------- */
+    .matrix {
+        --diag: 45deg;
+        position: relative;
+        padding: clamp(1.75rem, 3vw, 2.5rem);
+    }
+
+    /* 线条：从中心画出去 */
+    .matrix-lines {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    .matrix-lines line {
+        stroke: rgba(255, 255, 255, 0.85);
+        stroke-width: 1.5;
+        /* 线条长度按屏幕像素计算，1200 足够覆盖最长的斜线 */
+        stroke-dasharray: 1200;
+        stroke-dashoffset: 1200;
+        transition: stroke-dashoffset 1.2s var(--ease);
+    }
+
+    .matrix.is-active .matrix-lines line {
+        stroke-dashoffset: 0;
+    }
+
+    /* 箭头（用两条边框拼成尖角） */
+    .matrix-arrow {
+        position: absolute;
+        width: 11px;
+        height: 11px;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+        border-left: 1.5px solid rgba(255, 255, 255, 0.85);
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(calc(var(--r) + 45deg));
+        transition: opacity 0.4s var(--ease) 1s;
+    }
+
+    .matrix.is-active .matrix-arrow {
+        opacity: 1;
+    }
+
+    .matrix-arrow--t {
+        --r: 0deg;
+    }
+    .matrix-arrow--r {
+        --r: 90deg;
+    }
+    .matrix-arrow--b {
+        --r: 180deg;
+    }
+    .matrix-arrow--l {
+        --r: 270deg;
+    }
+    .matrix-arrow--tr {
+        --r: var(--diag);
+    }
+    .matrix-arrow--br {
+        --r: calc(180deg - var(--diag));
+    }
+    .matrix-arrow--bl {
+        --r: calc(180deg + var(--diag));
+    }
+    .matrix-arrow--tl {
+        --r: calc(360deg - var(--diag));
+    }
+
+    /* 卡片网格 */
+    .matrix-cards {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        gap: clamp(1.75rem, 3.5vw, 3.25rem);
+    }
+
+    .matrix-card {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.9rem 0.8rem 1rem;
+        border-radius: 10px;
+        background: #e3e0de;
+        color: var(--c-ink);
+        text-align: center;
+        transition: transform 0.5s var(--ease);
+    }
+
+    .matrix-card:hover {
+        transform: translateY(-4px);
+    }
+
+    /* 橙色"水位"：从下往上升 */
+    .matrix-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--fill);
+        background: var(--c-orange);
+        transform: scaleY(0);
+        transform-origin: bottom;
+        transition: transform 1s var(--ease) var(--delay);
+    }
+
+    .matrix.is-active .matrix-card::before {
+        transform: scaleY(1);
+    }
+
+    .matrix-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .matrix-card-title {
+        margin-bottom: 0.4rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .matrix-card-text {
+        font-size: 0.78rem;
+        line-height: 1.6;
+    }
+
+    html[lang="fr"] .matrix-card-text {
+        font-size: 0.72rem;
+    }
+
+    /* 底排文字为白色（全橙底） */
+    .matrix-card--row2 {
+        color: var(--c-white);
+        transition:
+            transform 0.5s var(--ease),
+            color 0.6s var(--ease) 1.2s;
+    }
+
+    /* ---------- 手机 / 平板 ---------- */
+    @media (max-width: 1024px) {
+        .why-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .why-image {
+            margin-top: var(--space-md);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .matrix {
+            padding: 0;
+        }
+
+        .matrix-lines,
+        .matrix-arrow {
+            display: none;
+        }
+
+        .matrix-cards {
+            grid-template-columns: 1fr;
+            grid-auto-rows: auto;
+            gap: 0.75rem;
+        }
+
+        .matrix-card-text,
+        html[lang="fr"] .matrix-card-text {
+            font-size: var(--fs-small);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .matrix-lines line {
+            stroke-dashoffset: 0;
+            transition: none;
+        }
+
+        .matrix-arrow {
+            opacity: 1;
+            transition: none;
+        }
+
+        .matrix-card::before {
+            transform: none;
+            transition: none;
+        }
+    }
+</style>

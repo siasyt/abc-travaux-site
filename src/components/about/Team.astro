@@ -1,0 +1,261 @@
+---
+// =========================================================
+// OUR TEAM.（对应 PDF 第 7 页）
+// 左：图片 + 大标题 + 横线 + 签名和标语（右侧竖线）
+// 右：4 位成员，每行 = 职位 | 姓名 + 关键词 + 介绍 | 大号编号
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { about } from "../../i18n/pages/about";
+
+const lang = getLangFromUrl(Astro.url);
+const c = about[lang].team;
+---
+
+<section class="section team" id="team">
+    <span class="watermark team-watermark" aria-hidden="true">ABC</span>
+
+    <div class="container">
+        <span class="eyebrow team-eyebrow" data-reveal>{c.eyebrow}</span>
+
+        <div class="team-grid">
+            <!-- ========== 左侧 ========== -->
+            <div class="team-left">
+                <div class="team-image" data-reveal>
+                    <img src={c.image} alt="" loading="lazy" decoding="async" />
+                </div>
+
+                <h2 class="display-title team-title">
+                    <span data-reveal data-reveal-delay="100">{c.title[0]}</span
+                    >
+                    <span data-reveal data-reveal-delay="250">{c.title[1]}</span
+                    >
+                </h2>
+                <span class="team-rule" aria-hidden="true"></span>
+
+                <div class="team-sign" data-reveal data-reveal-delay="350">
+                    <p class="team-signature">{c.signature}</p>
+                    <p class="team-tagline" set:html={c.tagline} />
+                </div>
+            </div>
+
+            <!-- ========== 右侧成员 ========== -->
+            <ol class="team-list">
+                {
+                    c.members.map((m, i) => (
+                        <li
+                            class="member"
+                            data-reveal
+                            data-reveal-delay={i * 150}
+                        >
+                            <p class="member-role">
+                                <span>{m.role[0]}</span>
+                                <span>{m.role[1]}</span>
+                            </p>
+
+                            <div class="member-body">
+                                <h3 class="member-name">{m.name}</h3>
+                                <p class="member-keywords">{m.keywords}</p>
+                                <p class="member-text">{m.text}</p>
+                            </div>
+
+                            <span class="member-index" aria-hidden="true">
+                                {String(i + 1).padStart(2, "0")}
+                            </span>
+                        </li>
+                    ))
+                }
+            </ol>
+        </div>
+    </div>
+</section>
+
+<style>
+    .team-watermark {
+        left: -3rem;
+        top: 10%;
+    }
+
+    .team-eyebrow {
+        margin-bottom: var(--space-md);
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+        gap: clamp(2.5rem, 6vw, 6rem);
+        align-items: start;
+    }
+
+    /* ---------- 左侧 ---------- */
+    .team-image {
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: 12px;
+    }
+
+    .team-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .team-title {
+        display: flex;
+        flex-direction: column;
+        margin-top: var(--space-md);
+        font-size: clamp(2.75rem, 5.5vw, 4.75rem);
+        line-height: 1.05;
+    }
+
+    .team-rule {
+        display: block;
+        height: 1px;
+        margin-block: var(--space-sm) var(--space-md);
+        background: var(--c-ink);
+    }
+
+    /* 签名 + 标语：右对齐，右侧竖线 */
+    .team-sign {
+        padding-right: var(--space-sm);
+        border-right: 1px solid var(--c-ink);
+        text-align: right;
+    }
+
+    .team-signature {
+        font-family: var(--f-display);
+        font-size: 1.15rem;
+        letter-spacing: 0.1em;
+        color: var(--c-grey);
+    }
+
+    .team-tagline {
+        margin-top: 0.25rem;
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.7;
+    }
+
+    /* ---------- 右侧成员列表 ---------- */
+    /* 4 行共用同一套列宽（subgrid），保证职位 / 介绍 / 编号上下对齐 */
+    .team-list {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        column-gap: clamp(1rem, 2vw, 1.75rem);
+        row-gap: var(--space-md);
+        list-style: none;
+    }
+
+    .member {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
+        align-items: center;
+        padding-block: var(--space-sm);
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.4s var(--ease);
+    }
+
+    .member:hover {
+        border-bottom-color: var(--c-line);
+    }
+
+    /* 职位：衬线大写，右对齐 */
+    .member-role {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-family: var(--f-display);
+        font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+        letter-spacing: 0.12em;
+        line-height: 1.35;
+        text-align: right;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    /* 姓名 + 关键词 + 介绍：右对齐 */
+    .member-body {
+        text-align: right;
+    }
+
+    .member-name {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .member-keywords {
+        font-size: var(--fs-small);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .member-text {
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        line-height: 1.75;
+        color: var(--c-ink);
+    }
+
+    /* 大号编号：浅灰，悬停变橙色 */
+    .member-index {
+        font-family: var(--f-display);
+        font-size: clamp(2.75rem, 5vw, 4.25rem);
+        font-weight: 600;
+        line-height: 1;
+        color: #e3e0de;
+        transition:
+            color 0.5s var(--ease),
+            transform 0.5s var(--ease);
+    }
+
+    .member:hover .member-index {
+        color: var(--c-orange);
+        transform: translateX(4px);
+    }
+
+    /* ---------- 平板 ---------- */
+    @media (max-width: 1024px) {
+        .team-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .team-left {
+            max-width: 560px;
+        }
+    }
+
+    /* ---------- 手机：职位放到上面，全部左对齐 ---------- */
+    @media (max-width: 640px) {
+        .team-list {
+            grid-template-columns: 1fr;
+        }
+
+        .member {
+            grid-column: auto;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "role index"
+                "body body";
+            align-items: start;
+            gap: 0.5rem 1rem;
+            border-bottom-color: var(--c-line);
+        }
+
+        .member-role {
+            grid-area: role;
+            white-space: normal;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .member-body {
+            grid-area: body;
+            text-align: left;
+        }
+
+        .member-index {
+            grid-area: index;
+        }
+    }
+</style>

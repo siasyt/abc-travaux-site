@@ -1,0 +1,319 @@
+---
+// =========================================================
+// OUR PROJECTS. 项目挑战（对应 PDF 第 11–13 页）
+// 顶部：页面标题
+// 下面 3 个区块，深棕 / 白交替，图片拼贴与案例说明左右交替
+// 每个案例 = 标题 + 难度星级 + 副标题 + 若干挑战要点
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { projects } from "../../i18n/pages/projects";
+
+const lang = getLangFromUrl(Astro.url);
+const c = projects[lang];
+
+// "难度系数" 后面的冒号
+const colon = lang === "zh" ? "：" : " :";
+---
+
+<!-- ========== 页面标题 ========== -->
+<section class="section pj-intro">
+    <span class="watermark pj-watermark" aria-hidden="true">ABC</span>
+    <div class="container pj-intro-inner">
+        <h1 class="display-title pj-title">
+            <span data-reveal>{c.intro.title[0]}</span>
+            <span data-reveal data-reveal-delay="120">{c.intro.title[1]}</span>
+        </h1>
+        <div class="pj-intro-side" data-reveal data-reveal-delay="250">
+            <p class="pj-eyebrow">{c.intro.eyebrow}</p>
+            <p class="pj-lead">{c.intro.lead}</p>
+        </div>
+    </div>
+</section>
+
+<!-- ========== 3 个区块 ========== -->
+{
+    c.blocks.map((block, b) => (
+        <section
+            class:list={[
+                "section",
+                "pj-block",
+                {
+                    "section--dark": b % 2 === 0,
+                    "pj-block--reverse": b % 2 === 1,
+                },
+            ]}
+            id={block.id}
+        >
+            <div class="container pj-grid">
+                {/* 图片拼贴 */}
+                <ul class="pj-mosaic" data-count={block.images.length}>
+                    {block.images.map((src, i) => (
+                        <li
+                            class="pj-tile"
+                            data-reveal
+                            data-reveal-delay={i * 80}
+                        >
+                            <img
+                                src={src}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </li>
+                    ))}
+                </ul>
+
+                {/* 案例说明 */}
+                <div class="pj-cases">
+                    {block.cases.map((cs) => (
+                        <article class="pj-case" data-reveal>
+                            <header class="pj-case-head">
+                                <h2 class="pj-case-title">{cs.title}</h2>
+                                <p class="pj-rating">
+                                    <span>
+                                        {c.intro.difficulty}
+                                        {colon}
+                                    </span>
+                                    <span
+                                        class="pj-stars"
+                                        role="img"
+                                        aria-label={`${c.intro.difficulty} ${cs.stars}/5`}
+                                    >
+                                        {Array.from({ length: 5 }, (_, i) => (
+                                            <span
+                                                class:list={[
+                                                    "pj-star",
+                                                    { "is-on": i < cs.stars },
+                                                ]}
+                                            >
+                                                ★
+                                            </span>
+                                        ))}
+                                    </span>
+                                </p>
+                                <p class="pj-case-sub">（ {cs.subtitle} ）</p>
+                            </header>
+
+                            <ul class="pj-points">
+                                {cs.points.map((pt) => (
+                                    <li>
+                                        <strong>{pt.title}</strong>
+                                        <span>{pt.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </article>
+                    ))}
+                </div>
+            </div>
+        </section>
+    ))
+}
+
+<style>
+    /* ---------- 页面标题 ---------- */
+    .pj-intro {
+        padding-bottom: var(--space-lg);
+    }
+
+    .pj-watermark {
+        right: -3rem;
+        top: -3rem;
+    }
+
+    .pj-intro-inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-md);
+    }
+
+    .pj-title {
+        display: flex;
+        flex-direction: column;
+        font-size: clamp(3rem, 7vw, 6rem);
+        line-height: 1;
+    }
+
+    .pj-intro-side {
+        max-width: 420px;
+        padding-left: var(--space-md);
+        border-left: 1px solid var(--c-ink);
+    }
+
+    .pj-eyebrow {
+        font-family: var(--f-display);
+        font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--c-grey);
+    }
+
+    .pj-lead {
+        margin-top: var(--space-xs);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    /* ---------- 区块 ---------- */
+    .pj-block {
+        scroll-margin-top: 80px;
+    }
+
+    .pj-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: clamp(2rem, 5vw, 5rem);
+        align-items: center;
+    }
+
+    .pj-block--reverse .pj-mosaic {
+        order: 1;
+    }
+
+    /* 图片拼贴：第一张占 2×2，其余填满 */
+    .pj-mosaic {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: clamp(90px, 10vw, 150px);
+        gap: 0.6rem;
+    }
+
+    /* 9 张：4 列，第一张 2×2，正好 3 行填满 */
+    .pj-mosaic[data-count="9"] {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* 4 张：第一张横跨整行做大图，下面 3 张一排 */
+    .pj-mosaic[data-count="4"] .pj-tile:first-child {
+        grid-column: span 3;
+    }
+
+    .pj-tile {
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    .pj-tile:first-child {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+
+    .pj-tile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1s var(--ease);
+    }
+
+    .pj-tile:hover img {
+        transform: scale(1.08);
+    }
+
+    /* ---------- 案例说明 ---------- */
+    .pj-cases {
+        display: grid;
+        gap: var(--space-lg);
+    }
+
+    .pj-case-title {
+        font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+        font-weight: 800;
+        letter-spacing: 0.04em;
+    }
+
+    /* 难度系数 + 星级 */
+    .pj-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.35rem;
+        font-size: var(--fs-small);
+        font-weight: 700;
+    }
+
+    .pj-stars {
+        display: inline-flex;
+        gap: 0.15rem;
+        font-size: 1.15rem;
+        line-height: 1;
+    }
+
+    .pj-star {
+        color: rgba(124, 118, 116, 0.35);
+    }
+
+    .pj-star.is-on {
+        color: #f6b73c;
+    }
+
+    .pj-case-sub {
+        margin-top: 0.3rem;
+        font-size: var(--fs-small);
+        font-weight: 800;
+        letter-spacing: 0.05em;
+    }
+
+    .pj-points {
+        display: grid;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+    }
+
+    .pj-points li {
+        font-size: 0.875rem;
+        line-height: 1.8;
+    }
+
+    .pj-points strong {
+        font-style: italic;
+        color: var(--c-orange);
+    }
+
+    .pj-points strong::after {
+        content: " : ";
+        color: currentColor;
+    }
+
+    :global(html[lang="zh"]) .pj-points strong::after {
+        content: "：";
+    }
+
+    .section--dark .pj-points span {
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* ---------- 平板 / 手机 ---------- */
+    @media (max-width: 960px) {
+        .pj-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pj-block--reverse .pj-mosaic {
+            order: 0;
+        }
+
+        .pj-intro-side {
+            padding-left: var(--space-sm);
+        }
+    }
+
+    @media (max-width: 560px) {
+        .pj-mosaic,
+        .pj-mosaic[data-count="9"] {
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 120px;
+        }
+
+        .pj-mosaic[data-count="4"] .pj-tile:first-child {
+            grid-column: span 2;
+        }
+
+        /* 手机上 2 列时，最后一张单独时横跨整行 */
+        .pj-tile:last-child:nth-child(even) {
+            grid-column: span 2;
+        }
+    }
+</style>

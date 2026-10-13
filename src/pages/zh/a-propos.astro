@@ -1,0 +1,15 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WhyUs from "../../components/about/WhyUs.astro";
+import Team from "../../components/about/Team.astro";
+import Stakeholders from "../../components/about/Stakeholders.astro";
+import { about } from "../../i18n/pages/about";
+
+const meta = about.zh.meta;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+    <WhyUs />
+    <Team />
+    <Stakeholders />
+</BaseLayout>

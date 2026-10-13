@@ -1,0 +1,245 @@
+---
+// =========================================================
+// 服务预览（参考 PDF 第 4、5 页）
+// 深棕底，两张卡片：Retail Space / Hospitality Space
+// 点击跳到服务页对应位置
+// =========================================================
+import { getLangFromUrl, localePath } from "../../i18n/ui";
+import { home } from "../../i18n/pages/home";
+
+const lang = getLangFromUrl(Astro.url);
+const c = home[lang].services;
+---
+
+<section class="section section--dark services-preview" id="services">
+    <span class="watermark sp-watermark" aria-hidden="true">ABC</span>
+    <span class="vertical-url">www.abc-travaux.com</span>
+
+    <div class="container">
+        <header class="sp-head">
+            <span class="eyebrow" data-reveal>{c.eyebrow}</span>
+            <p
+                class="sp-lead"
+                data-reveal
+                data-reveal-delay="150"
+                set:html={c.lead}
+            />
+        </header>
+
+        <div class="sp-grid">
+            {
+                c.items.map((item, i) => (
+                    <a
+                        class="sp-card"
+                        href={`${localePath(lang, "services")}#${item.id}`}
+                        data-reveal
+                        data-reveal-delay={i * 200}
+                    >
+                        <div class="sp-image">
+                            <img
+                                src={item.image}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </div>
+
+                        <p class="sp-tags">{item.tags}</p>
+
+                        <h2 class="display-title sp-title">
+                            <span>{item.title[0]}</span>
+                            <span>{item.title[1]}</span>
+                        </h2>
+
+                        <ul class="sp-points">
+                            {item.points.map((pt) => (
+                                <li>{pt}</li>
+                            ))}
+                        </ul>
+
+                        <span class="sp-more">
+                            {c.more}
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 12h14M13 6l6 6-6 6" />
+                            </svg>
+                        </span>
+                    </a>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .sp-watermark {
+        left: -4rem;
+        bottom: -4rem;
+    }
+
+    /* ---------- 顶部 ---------- */
+    .sp-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-lg);
+    }
+
+    .sp-lead {
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.7;
+        text-align: right;
+    }
+
+    /* ---------- 两张卡片，中间竖线 ---------- */
+    .sp-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .sp-card {
+        display: flex;
+        flex-direction: column;
+        padding-inline: clamp(1.5rem, 4vw, 3.5rem);
+    }
+
+    .sp-card:first-child {
+        padding-left: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .sp-card:last-child {
+        padding-right: 0;
+    }
+
+    /* 图片：圆角，悬停放大 */
+    .sp-image {
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: 10px;
+    }
+
+    .sp-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .sp-card:hover .sp-image img {
+        transform: scale(1.06);
+    }
+
+    /* 橙色斜体分类（PDF 图片旁边的那行） */
+    .sp-tags {
+        margin-top: var(--space-md);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.6;
+        color: var(--c-orange);
+        min-height: 3.2em; /* 两张卡片的分类行数不同，固定高度保证下方对齐 */
+    }
+
+    .sp-title {
+        display: flex;
+        flex-direction: column;
+        margin-top: var(--space-sm);
+        font-size: clamp(2rem, 3.6vw, 3.25rem);
+    }
+
+    /* 要点：橙色小圆点 */
+    .sp-points {
+        display: grid;
+        gap: 0.4rem;
+        margin-top: var(--space-md);
+    }
+
+    .sp-points li {
+        position: relative;
+        padding-left: 1.1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .sp-points li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.75em;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--c-orange);
+    }
+
+    /* 了解更多 */
+    .sp-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: auto;
+        padding-top: var(--space-md);
+        font-size: var(--fs-eyebrow);
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--c-orange);
+    }
+
+    .sp-more svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.5s var(--ease);
+    }
+
+    .sp-card:hover .sp-more svg {
+        transform: translateX(6px);
+    }
+
+    /* ---------- 手机端 ---------- */
+    @media (max-width: 860px) {
+        .sp-head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .sp-lead {
+            text-align: left;
+        }
+
+        .sp-lead :global(br) {
+            display: none;
+        }
+
+        .sp-tags {
+            min-height: 0;
+        }
+
+        .sp-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .sp-card,
+        .sp-card:first-child,
+        .sp-card:last-child {
+            padding-inline: 0;
+        }
+
+        .sp-card:first-child {
+            padding-bottom: var(--space-lg);
+            border-right: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    }
+</style>

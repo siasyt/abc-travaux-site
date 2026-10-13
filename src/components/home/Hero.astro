@@ -1,0 +1,239 @@
+---
+// =========================================================
+// 首页第一屏：对应 PDF 封面
+// =========================================================
+import { getLangFromUrl, localePath } from "../../i18n/ui";
+import { home } from "../../i18n/pages/home";
+
+const lang = getLangFromUrl(Astro.url);
+const c = home[lang].hero;
+---
+
+<section class="hero">
+    <!-- 背景大 Logo 水印 -->
+    <img
+        class="hero-watermark"
+        src="/images/brand/logo-abc.png"
+        alt=""
+        aria-hidden="true"
+        width="2000"
+        height="741"
+    />
+
+    <!-- 竖排网址 -->
+    <span class="vertical-url">www.abc-travaux.com</span>
+
+    <div class="container hero-inner">
+        <!-- 左上：公司名 -->
+        <div class="hero-company" data-reveal></div>
+
+        <!-- 右上：三个线条图标 -->
+        <ul class="hero-icons" aria-hidden="true">
+            <li data-reveal data-reveal-delay="200">
+                <img
+                    src="/images/icons/icon-plan.png"
+                    alt=""
+                    width="286"
+                    height="263"
+                />
+            </li>
+            <li data-reveal data-reveal-delay="350">
+                <img
+                    src="/images/icons/icon-checklist.png"
+                    alt=""
+                    width="285"
+                    height="330"
+                />
+            </li>
+            <li data-reveal data-reveal-delay="500">
+                <img
+                    src="/images/icons/icon-delivery.png"
+                    alt=""
+                    width="285"
+                    height="323"
+                />
+            </li>
+        </ul>
+
+        <!-- 主标题 -->
+        <div class="hero-main">
+            <h1 class="display-title display-title--hero hero-title">
+                <span class="hero-line" data-reveal data-reveal-delay="100"
+                    >{c.title[0]}</span
+                >
+                <span class="hero-line" data-reveal data-reveal-delay="250"
+                    >{c.title[1]}</span
+                >
+            </h1>
+            <span class="hero-rule" aria-hidden="true"></span>
+            <p class="hero-slogan" data-reveal data-reveal-delay="500">
+                {c.slogan}
+            </p>
+
+            <div class="hero-cta" data-reveal data-reveal-delay="650">
+                <a class="btn btn--primary" href={localePath(lang, "contact")}
+                    >{c.ctaPrimary}</a
+                >
+                <a
+                    class="btn btn--ghost"
+                    href={localePath(lang, "realisations")}>{c.ctaSecondary}</a
+                >
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hero {
+        position: relative;
+        overflow: hidden;
+        min-height: calc(100svh - 80px - 220px);
+        min-height: max(560px, calc(100svh - 80px - 220px));
+        display: flex;
+        align-items: stretch;
+        background: var(--c-white);
+    }
+
+    /* 背景 Logo：淡化处理，和 PDF 一样偏右下 */
+    .hero-watermark {
+        position: absolute;
+        right: -4%;
+        bottom: 6%;
+        width: min(58vw, 900px);
+        opacity: 0.1;
+        pointer-events: none;
+        user-select: none;
+        animation: watermark-in 1.6s var(--ease) both;
+    }
+
+    @keyframes watermark-in {
+        from {
+            opacity: 0;
+            transform: translateX(6%);
+        }
+        to {
+            opacity: 0.1;
+            transform: none;
+        }
+    }
+
+    .hero-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto 1fr;
+        padding-block: var(--space-md) var(--space-lg);
+    }
+
+    /* 左上公司信息 */
+    .hero-company {
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: var(--c-ink);
+    }
+
+    .hero-company-name {
+        margin-bottom: 0.3rem;
+        font-family: var(--f-display);
+        font-size: 0.95rem;
+        letter-spacing: 0.12em;
+    }
+
+    /* 右上图标 */
+    .hero-icons {
+        display: grid;
+        gap: 1.25rem;
+        justify-items: center;
+    }
+
+    .hero-icons img {
+        width: 44px;
+        height: auto;
+    }
+
+    /* 主标题区 */
+    .hero-main {
+        grid-column: 1 / -1;
+        align-self: end;
+        padding-top: var(--space-lg);
+    }
+
+    .hero-title {
+        display: flex;
+        flex-direction: column;
+        font-size: clamp(3.5rem, 9vw, 8rem);
+        line-height: 1;
+        letter-spacing: 0.06em;
+    }
+
+    /* 标题下的长横线：从左往右画出来 */
+    .hero-rule {
+        display: block;
+        width: min(70%, 900px);
+        height: 1px;
+        margin-top: var(--space-sm);
+        background: var(--c-ink);
+        transform: scaleX(0);
+        transform-origin: left;
+        animation: rule-in 1.2s var(--ease) 0.5s forwards;
+    }
+
+    @keyframes rule-in {
+        to {
+            transform: scaleX(1);
+        }
+    }
+
+    .hero-slogan {
+        margin-top: 0.6rem;
+        font-family: var(--f-display);
+        font-size: clamp(0.8rem, 1.1vw, 1rem);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+    }
+
+    .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+    }
+
+    /* 手机端 */
+    @media (max-width: 768px) {
+        .hero {
+            min-height: auto;
+        }
+
+        .hero-icons {
+            gap: 0.75rem;
+        }
+
+        .hero-icons img {
+            width: 32px;
+        }
+
+        .hero-watermark {
+            width: 90vw;
+            right: -10%;
+            bottom: 30%;
+        }
+
+        .hero-rule {
+            width: 100%;
+        }
+
+        .hero-slogan {
+            letter-spacing: 0.2em;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .hero-watermark,
+        .hero-rule {
+            animation: none;
+            transform: none;
+        }
+    }
+</style>

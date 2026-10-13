@@ -1,0 +1,421 @@
+---
+// =========================================================
+// HOW WE DELIVER. 12 步交付流程（对应 PDF 第 9 页）
+// 左：灰色面板，12 张橙色卡片按"蛇形"排列
+//     第 1 行 1→4（向右），第 2 行 5→8（向左），第 3 行 9→12（向右）
+//     每两步之间用 ◆····▶ 虚线箭头连接
+// 右：小标签 + 大标题 + 横线 + 图片 + 标语
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { delivery } from "../../i18n/pages/delivery";
+
+const lang = getLangFromUrl(Astro.url);
+const c = delivery[lang];
+
+const COLS = 4;
+
+// 计算每一步在网格中的位置，以及连到下一步的方向
+const steps = c.steps.map((step, i) => {
+    const row = Math.floor(i / COLS);
+    const pos = i % COLS;
+    const reverse = row % 2 === 1; // 偶数行向右，奇数行向左
+    const col = reverse ? COLS - pos : pos + 1;
+
+    let dir: "right" | "left" | "down" | null = null;
+    if (i < c.steps.length - 1) {
+        if (pos === COLS - 1) dir = "down";
+        else dir = reverse ? "left" : "right";
+    }
+
+    return { ...step, row: row + 1, col, dir, index: i };
+});
+---
+
+<section class="section process" id="process">
+    <img
+        class="process-watermark"
+        src="/images/brand/logo-abc.png"
+        alt=""
+        aria-hidden="true"
+        width="2000"
+        height="741"
+        loading="lazy"
+    />
+
+    <div class="container process-grid">
+        <!-- ========== 左侧流程 ========== -->
+        <ol class="process-board" data-process>
+            {
+                steps.map((s) => (
+                    <li
+                        class="step"
+                        style={`grid-row:${s.row}; grid-column:${s.col}; --i:${s.index};`}
+                    >
+                        <span class="step-num">
+                            {String(s.index + 1).padStart(2, "0")}
+                        </span>
+                        <h3 class="step-title">{s.title}</h3>
+                        <ul class="step-list">
+                            {s.items.map((item) => (
+                                <li>{item}</li>
+                            ))}
+                        </ul>
+                        {s.dir && (
+                            <span
+                                class={`step-link step-link--${s.dir}`}
+                                aria-hidden="true"
+                            />
+                        )}
+                    </li>
+                ))
+            }
+        </ol>
+
+        <!-- ========== 右侧 ========== -->
+        <div class="process-side">
+            <p class="process-eyebrow" data-reveal>{c.eyebrow}</p>
+            <h2 class="display-title process-title">
+                <span data-reveal data-reveal-delay="100">{c.title[0]}</span>
+                <span data-reveal data-reveal-delay="200">{c.title[1]}</span>
+            </h2>
+            <span class="process-rule" aria-hidden="true"></span>
+
+            <div class="process-image" data-reveal data-reveal-delay="300">
+                <img src={c.image} alt="" loading="lazy" decoding="async" />
+            </div>
+
+            <p class="process-tagline" data-reveal data-reveal-delay="400">
+                {c.tagline}
+            </p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // 流程面板进入视口后，卡片按 1 → 12 依次出现
+    const board = document.querySelector<HTMLElement>("[data-process]");
+    if (board) {
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (!e.isIntersecting) return;
+                    board.classList.add("is-active");
+                    io.disconnect();
+                });
+            },
+            { threshold: 0.2 },
+        );
+        io.observe(board);
+    }
+</script>
+
+<style>
+    .process {
+        scroll-margin-top: 80px;
+    }
+
+    .process-watermark {
+        position: absolute;
+        right: -8%;
+        bottom: -14%;
+        width: min(55vw, 820px);
+        opacity: 0.08;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .process-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+        gap: clamp(2rem, 4vw, 4rem);
+        align-items: center;
+    }
+
+    /* ---------- 流程面板 ---------- */
+    .process-board {
+        --gap-x: clamp(1.25rem, 2.4vw, 2.5rem);
+        --gap-y: clamp(1.75rem, 3vw, 2.75rem);
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--gap-y) var(--gap-x);
+        padding: clamp(1rem, 2vw, 1.5rem);
+        border-radius: 12px;
+        background: #e3e0de;
+        list-style: none;
+    }
+
+    /* 单张卡片 */
+    .step {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        padding: 0.8rem 0.7rem 0.9rem;
+        border-radius: 10px;
+        background: var(--c-orange);
+        color: var(--c-ink);
+        opacity: 0;
+        transform: translateY(16px);
+        transition:
+            opacity 0.5s var(--ease) calc(var(--i) * 110ms),
+            transform 0.5s var(--ease) calc(var(--i) * 110ms),
+            background 0.3s var(--ease);
+    }
+
+    .process-board.is-active .step {
+        opacity: 1;
+        transform: none;
+    }
+
+    .step:hover {
+        background: var(--c-orange-deep);
+    }
+
+    /* 右上角小编号 */
+    .step-num {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.6rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .step-title {
+        margin-bottom: 0.4rem;
+        font-size: clamp(0.85rem, 1.15vw, 1.05rem);
+        font-weight: 800;
+        color: var(--c-white);
+    }
+
+    /* 法文标题较长：缩小字号 */
+    :global(html[lang="fr"]) .step-title {
+        font-size: clamp(0.78rem, 1vw, 0.92rem);
+    }
+
+    .step-list {
+        display: grid;
+        gap: 0.15rem;
+        font-size: 0.72rem;
+        line-height: 1.45;
+    }
+
+    .step-list li {
+        position: relative;
+        padding-left: 0.7rem;
+    }
+
+    .step-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.6em;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--c-ink);
+    }
+
+    /* ---------- 连接箭头 ◆····▶ ---------- */
+    .step-link {
+        position: absolute;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.4s var(--ease) calc(var(--i) * 110ms + 300ms);
+    }
+
+    .process-board.is-active .step-link {
+        opacity: 1;
+    }
+
+    /* 横向：虚线 */
+    .step-link--right,
+    .step-link--left {
+        top: 50%;
+        width: var(--gap-x);
+        height: 0;
+        border-top: 2.5px dotted var(--c-ink);
+    }
+
+    .step-link--right {
+        left: 100%;
+    }
+
+    .step-link--left {
+        right: 100%;
+    }
+
+    /* 纵向：虚线 */
+    .step-link--down {
+        top: 100%;
+        left: 50%;
+        width: 0;
+        height: var(--gap-y);
+        border-left: 2.5px dotted var(--c-ink);
+    }
+
+    /* 起点的小菱形 ◆ */
+    .step-link::before {
+        content: "";
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        background: var(--c-ink);
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .step-link--right::before {
+        left: 0;
+        top: -1px;
+    }
+
+    .step-link--left::before {
+        left: 100%;
+        top: -1px;
+    }
+
+    .step-link--down::before {
+        left: -1px;
+        top: 0;
+    }
+
+    /* 终点的箭头 ▶（用三角形） */
+    .step-link::after {
+        content: "";
+        position: absolute;
+        border: 5px solid transparent;
+    }
+
+    .step-link--right::after {
+        right: -6px;
+        top: -6.5px;
+        border-left-color: var(--c-ink);
+    }
+
+    .step-link--left::after {
+        left: -6px;
+        top: -6.5px;
+        border-right-color: var(--c-ink);
+    }
+
+    .step-link--down::after {
+        bottom: -6px;
+        left: -6.5px;
+        border-top-color: var(--c-ink);
+    }
+
+    /* ---------- 右侧 ---------- */
+    .process-eyebrow {
+        font-family: var(--f-display);
+        font-size: clamp(0.85rem, 1.3vw, 1.15rem);
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+    }
+
+    .process-title {
+        display: flex;
+        flex-direction: column;
+        font-size: clamp(2.25rem, 4vw, 3.75rem);
+        line-height: 1.05;
+    }
+
+    .process-rule {
+        display: block;
+        height: 1px;
+        margin-block: var(--space-sm) var(--space-md);
+        background: var(--c-ink);
+    }
+
+    .process-image {
+        overflow: hidden;
+        aspect-ratio: 3 / 2;
+        border-radius: 12px;
+    }
+
+    .process-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .process-image:hover img {
+        transform: scale(1.05);
+    }
+
+    .process-tagline {
+        margin-top: var(--space-sm);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        text-align: center;
+    }
+
+    /* ---------- 平板：右侧移到上面 ---------- */
+    @media (max-width: 1024px) {
+        .process-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .process-side {
+            order: -1;
+        }
+
+        .process-image {
+            aspect-ratio: 16 / 9;
+        }
+    }
+
+    /* ---------- 手机：单列，1 → 12 从上到下 ---------- */
+    @media (max-width: 640px) {
+        .process-board {
+            grid-template-columns: 1fr;
+        }
+
+        .step {
+            grid-row: auto !important;
+            grid-column: auto !important;
+        }
+
+        .step-list {
+            font-size: var(--fs-small);
+        }
+
+        /* 所有连接都改成向下 */
+        .step-link--right,
+        .step-link--left {
+            top: 100%;
+            left: 50%;
+            right: auto;
+            width: 0;
+            height: var(--gap-y);
+            border-top: none;
+            border-left: 2.5px dotted var(--c-ink);
+        }
+
+        .step-link--right::before,
+        .step-link--left::before {
+            left: -1px;
+            top: 0;
+        }
+
+        .step-link--right::after,
+        .step-link--left::after {
+            right: auto;
+            top: auto;
+            bottom: -6px;
+            left: -6.5px;
+            border-color: transparent;
+            border-top-color: var(--c-ink);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .step,
+        .step-link {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+    }
+</style>

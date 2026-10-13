@@ -1,0 +1,456 @@
+---
+// =========================================================
+// 图集 Portfolio（对应 PDF 第 14–18 页）
+// 顶部：标题 + 分类筛选（全部 / 门店 / 餐厅 / 酒吧咖啡）
+// 中间：瀑布流图片墙
+// 点击图片：全屏灯箱，可左右切换（键盘 ← →、手机左右滑动）
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { galleryText } from "../../i18n/pages/gallery";
+import { gallery } from "../../data/gallery";
+
+const lang = getLangFromUrl(Astro.url);
+const t = galleryText[lang];
+
+const filters = [
+    { id: "all", label: t.filters.all },
+    { id: "retail", label: t.filters.retail },
+    { id: "resto", label: t.filters.resto },
+    { id: "bar", label: t.filters.bar },
+] as const;
+---
+
+<section class="section gallery" id="portfolio" data-gallery>
+    <div class="container">
+        <!-- 标题 + 筛选 -->
+        <header class="gal-head">
+            <div>
+                <p class="gal-eyebrow" data-reveal>{t.eyebrow}</p>
+                <h2
+                    class="display-title gal-title"
+                    data-reveal
+                    data-reveal-delay="100"
+                >
+                    {t.title[0]}
+                </h2>
+            </div>
+
+            <div
+                class="gal-filters"
+                role="group"
+                data-reveal
+                data-reveal-delay="200"
+            >
+                {
+                    filters.map((f, i) => (
+                        <button
+                            type="button"
+                            class:list={[
+                                "gal-filter",
+                                { "is-active": i === 0 },
+                            ]}
+                            data-filter={f.id}
+                            aria-pressed={i === 0 ? "true" : "false"}
+                        >
+                            {f.label}
+                        </button>
+                    ))
+                }
+            </div>
+        </header>
+
+        <!-- 瀑布流 -->
+        <ul class="gal-grid">
+            {
+                gallery.map((img, i) => (
+                    <li
+                        class="gal-item"
+                        data-category={img.category}
+                        data-label={t.filters[img.category]}
+                    >
+                        <button
+                            type="button"
+                            class="gal-thumb"
+                            data-index={i}
+                            aria-label={t.filters[img.category]}
+                        >
+                            <img
+                                src={img.src}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </button>
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+
+    <!-- 灯箱 -->
+    <dialog class="lightbox" data-lightbox>
+        <button
+            type="button"
+            class="lb-btn lb-close"
+            data-lb-close
+            aria-label={t.close}
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true"
+                ><path d="M6 6l12 12M18 6 6 18"></path></svg
+            >
+        </button>
+        <button
+            type="button"
+            class="lb-btn lb-prev"
+            data-lb-prev
+            aria-label={t.prev}
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true"
+                ><path d="M15 5l-7 7 7 7"></path></svg
+            >
+        </button>
+        <figure class="lb-figure">
+            <img class="lb-img" data-lb-img alt="" />
+            <figcaption class="lb-caption">
+                <span data-lb-cat></span>
+                <span class="lb-count" data-lb-count></span>
+            </figcaption>
+        </figure>
+        <button
+            type="button"
+            class="lb-btn lb-next"
+            data-lb-next
+            aria-label={t.next}
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true"
+                ><path d="M9 5l7 7-7 7"></path></svg
+            >
+        </button>
+    </dialog>
+</section>
+
+<script>
+    function initGallery() {
+        const root = document.querySelector<HTMLElement>("[data-gallery]");
+        if (!root) return;
+
+        const items = Array.from(
+            root.querySelectorAll<HTMLElement>(".gal-item"),
+        );
+        const buttons = Array.from(
+            root.querySelectorAll<HTMLButtonElement>("[data-filter]"),
+        );
+        const dialog =
+            root.querySelector<HTMLDialogElement>("[data-lightbox]")!;
+        const lbImg = root.querySelector<HTMLImageElement>("[data-lb-img]")!;
+        const lbCat = root.querySelector<HTMLElement>("[data-lb-cat]")!;
+        const lbCount = root.querySelector<HTMLElement>("[data-lb-count]")!;
+
+        // ---------- 分类筛选 ----------
+        buttons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const f = btn.dataset.filter!;
+                buttons.forEach((b) => {
+                    const on = b === btn;
+                    b.classList.toggle("is-active", on);
+                    b.setAttribute("aria-pressed", String(on));
+                });
+                items.forEach((item) => {
+                    item.hidden = f !== "all" && item.dataset.category !== f;
+                });
+            });
+        });
+
+        // ---------- 灯箱 ----------
+        let current: HTMLElement[] = [];
+        let pos = 0;
+
+        function show(i: number) {
+            pos = (i + current.length) % current.length;
+            const item = current[pos];
+            const img = item.querySelector("img")!;
+            lbImg.src = img.currentSrc || img.src;
+            lbCat.textContent = item.dataset.label ?? "";
+            lbCount.textContent = `${pos + 1} / ${current.length}`;
+        }
+
+        root.querySelectorAll<HTMLButtonElement>(".gal-thumb").forEach(
+            (thumb) => {
+                thumb.addEventListener("click", () => {
+                    current = items.filter((it) => !it.hidden); // 只在当前筛选结果里切换
+                    const item = thumb.closest<HTMLElement>(".gal-item")!;
+                    show(current.indexOf(item));
+                    dialog.showModal();
+                    document.documentElement.style.overflow = "hidden";
+                });
+            },
+        );
+
+        const close = () => dialog.close();
+        dialog.addEventListener("close", () => {
+            document.documentElement.style.overflow = "";
+        });
+
+        root.querySelector("[data-lb-close]")!.addEventListener("click", close);
+        root.querySelector("[data-lb-prev]")!.addEventListener("click", () =>
+            show(pos - 1),
+        );
+        root.querySelector("[data-lb-next]")!.addEventListener("click", () =>
+            show(pos + 1),
+        );
+
+        // 点击图片外的空白处关闭
+        dialog.addEventListener("click", (e) => {
+            if (e.target === dialog) close();
+        });
+
+        // 键盘：← → 切换（Esc 关闭是 dialog 自带的）
+        dialog.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft") show(pos - 1);
+            if (e.key === "ArrowRight") show(pos + 1);
+        });
+
+        // 手机：左右滑动切换
+        let startX = 0;
+        dialog.addEventListener(
+            "touchstart",
+            (e) => (startX = e.touches[0].clientX),
+            { passive: true },
+        );
+        dialog.addEventListener("touchend", (e) => {
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 50) show(dx < 0 ? pos + 1 : pos - 1);
+        });
+    }
+
+    initGallery();
+</script>
+
+<style>
+    .gallery {
+        scroll-margin-top: 80px;
+    }
+
+    /* ---------- 标题 + 筛选 ---------- */
+    .gal-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+
+    .gal-eyebrow {
+        font-family: var(--f-display);
+        font-size: clamp(0.8rem, 1.1vw, 1rem);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--c-grey);
+    }
+
+    .gal-title {
+        font-size: clamp(2.5rem, 6vw, 5rem);
+    }
+
+    .gal-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .gal-filter {
+        padding: 0.55em 1.3em;
+        border: 1px solid var(--c-line);
+        border-radius: 999px;
+        font-size: var(--fs-small);
+        font-weight: 600;
+        color: var(--c-ink);
+        transition:
+            background 0.3s var(--ease),
+            color 0.3s var(--ease),
+            border-color 0.3s var(--ease);
+    }
+
+    .gal-filter:hover {
+        border-color: var(--c-orange-deep);
+        color: var(--c-orange-deep);
+    }
+
+    .gal-filter.is-active {
+        border-color: var(--c-orange-deep);
+        background: var(--c-orange-deep);
+        color: var(--c-white);
+    }
+
+    /* ---------- 瀑布流 ---------- */
+    .gal-grid {
+        column-count: 4;
+        column-gap: 0.75rem;
+    }
+
+    .gal-item {
+        break-inside: avoid;
+        margin-bottom: 0.75rem;
+    }
+
+    .gal-item[hidden] {
+        display: none;
+    }
+
+    .gal-thumb {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 10px;
+        cursor: zoom-in;
+    }
+
+    .gal-thumb img {
+        width: 100%;
+        height: auto;
+        transition:
+            transform 0.8s var(--ease),
+            filter 0.5s var(--ease);
+    }
+
+    .gal-thumb:hover img {
+        transform: scale(1.05);
+        filter: brightness(1.05);
+    }
+
+    .gal-thumb:focus-visible {
+        outline: 2px solid var(--c-orange-deep);
+        outline-offset: 3px;
+    }
+
+    /* ---------- 灯箱 ---------- */
+    .lightbox {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100dvh;
+        max-height: 100dvh;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: rgba(28, 22, 18, 0.94);
+        color: var(--c-white);
+    }
+
+    .lightbox[open] {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: lb-in 0.35s var(--ease);
+    }
+
+    .lightbox::backdrop {
+        background: transparent;
+    }
+
+    @keyframes lb-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    .lb-figure {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: min(90vw, 1400px);
+    }
+
+    /* 小图也放大到至少 65% 屏幕高度显示 */
+    .lb-img {
+        width: auto;
+        height: auto;
+        min-height: min(65dvh, 640px);
+        max-width: 100%;
+        max-height: 80dvh;
+        border-radius: 8px;
+        object-fit: contain;
+    }
+
+    .lb-caption {
+        display: flex;
+        gap: 1.25rem;
+        margin-top: 0.9rem;
+        font-size: var(--fs-small);
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .lb-count {
+        color: var(--c-orange);
+    }
+
+    .lb-btn {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        color: var(--c-white);
+        background: rgba(255, 255, 255, 0.08);
+        transition: background 0.3s var(--ease);
+    }
+
+    .lb-btn:hover {
+        background: var(--c-orange-deep);
+    }
+
+    .lb-btn svg {
+        width: 22px;
+        height: 22px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .lb-close {
+        top: 1.25rem;
+        right: 1.25rem;
+    }
+
+    .lb-prev {
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .lb-next {
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* ---------- 响应式 ---------- */
+    @media (max-width: 1024px) {
+        .gal-grid {
+            column-count: 3;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .gal-grid {
+            column-count: 2;
+            column-gap: 0.5rem;
+        }
+
+        .gal-item {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 手机上用滑动切换，左右按钮移到底部 */
+        .lb-prev,
+        .lb-next {
+            top: auto;
+            bottom: 1.25rem;
+            transform: none;
+        }
+    }
+</style>

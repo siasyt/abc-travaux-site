@@ -1,0 +1,245 @@
+---
+// =========================================================
+// 页脚：参考 PDF 最后一页（联系方式 + "Bâtir avec le cœur"）
+// =========================================================
+import {
+    getLangFromUrl,
+    useTranslations,
+    localePath,
+    site,
+    type UiKey,
+} from "../i18n/ui";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+
+const navItems: { key: UiKey; path: string }[] = [
+    { key: "nav.home", path: "" },
+    { key: "nav.about", path: "a-propos" },
+    { key: "nav.services", path: "services" },
+    { key: "nav.projects", path: "realisations" },
+    { key: "nav.contact", path: "contact" },
+];
+---
+
+<footer class="site-footer">
+    <span class="watermark footer-watermark" aria-hidden="true">ABC</span>
+
+    <div class="container footer-grid">
+        <!-- 品牌 -->
+        <div class="footer-brand">
+            <a href={localePath(lang)} aria-label="ABC Travaux">
+                <img
+                    src="/images/brand/logo-abc.png"
+                    alt="ABC Travaux"
+                    width="140"
+                    height="52"
+                />
+            </a>
+            <p class="footer-slogan">"{site.slogan}"</p>
+            {
+                lang === "zh" && (
+                    <p class="footer-slogan-zh">{t("footer.tagline")}</p>
+                )
+            }
+        </div>
+
+        <!-- 导航 -->
+        <nav class="footer-col" aria-label="Navigation du pied de page">
+            <span class="eyebrow">ABC Travaux</span>
+            <ul>
+                {
+                    navItems.map((item) => (
+                        <li>
+                            <a href={localePath(lang, item.path)}>
+                                {t(item.key)}
+                            </a>
+                        </li>
+                    ))
+                }
+            </ul>
+        </nav>
+
+        <!-- 联系方式 -->
+        <div class="footer-col">
+            <span class="eyebrow">{t("footer.contact")}</span>
+            <ul class="footer-contact">
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"
+                        ></path>
+                        <circle cx="12" cy="9.5" r="2.5"></circle>
+                    </svg>
+                    <span>
+                        {site.address.street}<br />
+                        {site.address.city}<br />
+                        {site.address.country}
+                    </span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"
+                        ></path>
+                    </svg>
+                    <a href={site.phoneHref}>{site.phone}</a>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                        <path d="m3 7 9 6 9-6"></path>
+                    </svg>
+                    <a href={`mailto:${site.email}`}>{site.email}</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 微信 -->
+        <div class="footer-col">
+            <span class="eyebrow">{t("footer.follow")}</span>
+            <ul class="footer-contact">
+                <li>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path
+                            d="M9.5 4C5.4 4 2 6.8 2 10.2c0 1.9 1 3.6 2.7 4.7L4 17.5l2.9-1.5c.8.2 1.7.4 2.6.4"
+                        ></path>
+                        <path
+                            d="M15.5 9c3.6 0 6.5 2.4 6.5 5.4 0 1.6-.9 3-2.3 4l.5 2.1-2.4-1.3c-.7.2-1.5.3-2.3.3-3.6 0-6.5-2.4-6.5-5.4S11.9 9 15.5 9Z"
+                        ></path>
+                    </svg>
+                    <span>{site.wechat}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 底部版权 -->
+    <div class="container footer-bottom">
+        <span>© {year} ABC Travaux Ltd. {t("footer.rights")}</span>
+        <span class="footer-url">www.abc-travaux.com</span>
+    </div>
+</footer>
+
+<style>
+    .site-footer {
+        position: relative;
+        overflow: hidden;
+        padding-top: var(--space-lg);
+        background: var(--c-white);
+        border-top: 1px solid var(--c-orange);
+    }
+
+    .footer-watermark {
+        right: -3rem;
+        bottom: -3rem;
+    }
+
+    .footer-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1.2fr 1fr;
+        gap: var(--space-md);
+    }
+
+    /* 品牌 */
+    .footer-brand img {
+        width: auto;
+        height: 44px;
+    }
+
+    .footer-slogan {
+        margin-top: var(--space-sm);
+        font-family: var(--f-display);
+        font-style: italic;
+        font-size: 1.15rem;
+        color: var(--c-ink);
+    }
+
+    .footer-slogan-zh {
+        font-size: var(--fs-small);
+        letter-spacing: 0.2em;
+        color: var(--c-grey);
+    }
+
+    /* 列 */
+    .footer-col .eyebrow {
+        margin-bottom: var(--space-sm);
+    }
+
+    .footer-col ul {
+        display: grid;
+        gap: 0.5rem;
+        font-size: var(--fs-small);
+    }
+
+    .footer-col a {
+        transition: color 0.3s var(--ease);
+    }
+
+    .footer-col a:hover {
+        color: var(--c-orange-deep);
+    }
+
+    /* 联系方式带图标 */
+    .footer-contact li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        line-height: 1.6;
+    }
+
+    .footer-contact svg {
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        margin-top: 0.15rem;
+        fill: none;
+        stroke: var(--c-orange-deep);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .footer-contact a {
+        word-break: break-all;
+    }
+
+    /* 底部版权 */
+    .footer-bottom {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: var(--space-xs);
+        margin-top: var(--space-lg);
+        padding-block: var(--space-md);
+        border-top: 1px solid var(--c-line);
+        font-size: 0.75rem;
+        color: var(--c-grey);
+    }
+
+    .footer-url {
+        letter-spacing: 0.25em;
+    }
+
+    /* 响应式 */
+    @media (max-width: 900px) {
+        .footer-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .footer-brand {
+            grid-column: 1 / -1;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .footer-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

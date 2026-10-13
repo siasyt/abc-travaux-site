@@ -1,0 +1,203 @@
+---
+// =========================================================
+// OUR PARTNERS.（对应 PDF 第 3 页）
+// 左：小标签 + 大标题 + 文案（右对齐），右侧竖线分隔
+// 右：合作品牌 Logo 墙
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { home } from "../../i18n/pages/home";
+import { partners } from "../../data/partners";
+
+const lang = getLangFromUrl(Astro.url);
+const c = home[lang].partners;
+---
+
+<section class="section partners" id="partners">
+    <!-- 背景淡化 Logo + 竖排网址 -->
+    <img
+        class="partners-watermark"
+        src="/images/brand/logo-abc.png"
+        alt=""
+        aria-hidden="true"
+        width="2000"
+        height="741"
+        loading="lazy"
+    />
+    <span class="vertical-url">www.abc-travaux.com</span>
+
+    <div class="container">
+        <span class="eyebrow partners-eyebrow" data-reveal>{c.eyebrow}</span>
+
+        <div class="partners-grid">
+            <!-- 左侧文案 -->
+            <div class="partners-text">
+                <h2 class="display-title partners-title">
+                    <span data-reveal data-reveal-delay="100">{c.title[0]}</span
+                    >
+                    <span data-reveal data-reveal-delay="250">{c.title[1]}</span
+                    >
+                </h2>
+                <p
+                    class="partners-lead"
+                    data-reveal
+                    data-reveal-delay="350"
+                    set:html={c.lead}
+                />
+                {
+                    c.paragraphs.map((p, i) => (
+                        <p
+                            class="partners-p"
+                            data-reveal
+                            data-reveal-delay={450 + i * 150}
+                            set:html={p}
+                        />
+                    ))
+                }
+            </div>
+
+            <!-- 右侧 Logo 墙 -->
+            <ul class="logo-wall">
+                {
+                    partners.map((p, i) => (
+                        <li
+                            class="logo-item"
+                            data-reveal
+                            data-reveal-delay={(i % 4) * 80}
+                        >
+                            <img
+                                src={p.logo}
+                                alt={p.name}
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </li>
+                    ))
+                }
+            </ul>
+        </div>
+    </div>
+</section>
+
+<style>
+    .partners-watermark {
+        position: absolute;
+        right: -6%;
+        bottom: -12%;
+        width: min(60vw, 900px);
+        opacity: 0.08;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .partners-eyebrow {
+        margin-bottom: var(--space-md);
+    }
+
+    .partners-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+        align-items: center;
+    }
+
+    /* ---------- 左侧 ---------- */
+    .partners-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding-right: clamp(2rem, 4vw, 3.5rem);
+        border-right: 1px solid var(--c-ink);
+        text-align: right;
+    }
+
+    .partners-title {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+        line-height: 1.05;
+    }
+
+    .partners-lead {
+        margin-top: var(--space-sm);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+        line-height: 1.7;
+    }
+
+    .partners-p {
+        margin-top: var(--space-md);
+        font-size: 0.95rem;
+        font-weight: 600;
+        line-height: 1.85;
+    }
+
+    .partners-p + .partners-p {
+        margin-top: var(--space-sm);
+    }
+
+    .partners-p :global(mark) {
+        background: none;
+        color: var(--c-orange);
+        font-weight: 700;
+    }
+
+    /* ---------- 右侧 Logo 墙 ---------- */
+    .logo-wall {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.5rem, 1.2vw, 1rem) clamp(1rem, 2vw, 1.75rem);
+        padding-left: clamp(2rem, 4vw, 3.5rem);
+    }
+
+    .logo-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 16 / 10;
+        padding: 0.25rem;
+    }
+
+    .logo-item img {
+        max-width: 100%;
+        max-height: 72%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        transition: transform 0.5s var(--ease);
+    }
+
+    .logo-item:hover img {
+        transform: scale(1.08);
+    }
+
+    /* ---------- 手机端 ---------- */
+    @media (max-width: 900px) {
+        .partners-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .partners-text {
+            align-items: flex-start;
+            padding-right: 0;
+            padding-bottom: var(--space-md);
+            border-right: none;
+            border-bottom: 1px solid var(--c-ink);
+            text-align: left;
+        }
+
+        .partners-title {
+            align-items: flex-start;
+        }
+
+        .partners-lead :global(br) {
+            display: none;
+        }
+
+        .logo-wall {
+            grid-template-columns: repeat(3, 1fr);
+            padding-left: 0;
+        }
+    }
+</style>

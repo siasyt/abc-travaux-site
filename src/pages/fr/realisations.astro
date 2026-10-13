@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Challenges from "../../components/projects/Challenges.astro";
+import Gallery from "../../components/projects/Gallery.astro";
+import { projects } from "../../i18n/pages/projects";
+
+const meta = projects.fr.meta;
+---
+
+<BaseLayout title={meta.title} description={meta.description}>
+    <Challenges />
+    <Gallery />
+</BaseLayout>

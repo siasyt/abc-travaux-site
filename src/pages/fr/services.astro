@@ -1,0 +1,22 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ServiceDetail from "../../components/services/ServiceDetail.astro";
+import PainPoints from "../../components/services/PainPoints.astro";
+import Process from "../../components/services/Process.astro";
+import { services } from "../../i18n/pages/services";
+
+const c = services.fr;
+const [retail, hospitality] = c.items;
+---
+
+<BaseLayout title={c.meta.title} description={c.meta.description}>
+    <ServiceDetail item={retail} eyebrow={c.eyebrow} lead={c.lead} dark />
+    <ServiceDetail
+        item={hospitality}
+        eyebrow={c.eyebrow}
+        lead={c.lead}
+        reverse
+    />
+    <PainPoints />
+    <Process />
+</BaseLayout>

@@ -1,0 +1,333 @@
+---
+// =========================================================
+// YOU MAY ENCOUNTER. 痛点对比（对应 PDF 第 6 页）
+// 深棕底，右上大标题
+// 两组卡片：前 4 张 = 选择华人团队，后 2 张 = 选择法国团队
+// 每组底部一条橙色横条托住卡片，卡片之间用虚线连接
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { services } from "../../i18n/pages/services";
+
+const lang = getLangFromUrl(Astro.url);
+const c = services[lang].painPoints;
+---
+
+<section class="section section--dark pain" id="pain-points">
+    <div class="container">
+        <header class="pain-head">
+            <h2 class="display-title pain-title" data-reveal>{c.title}</h2>
+            <span class="pain-rule" aria-hidden="true"></span>
+            <p class="pain-subtitle" data-reveal data-reveal-delay="150">
+                {c.subtitle}
+            </p>
+        </header>
+
+        <div class="pain-groups">
+            {
+                c.groups.map((group, g) => (
+                    <div
+                        class="pain-group"
+                        style={`--cols:${group.cards.length}`}
+                    >
+                        <ul class="pain-cards">
+                            {group.cards.map((card, i) => (
+                                <li
+                                    class="pain-card"
+                                    data-reveal
+                                    data-reveal-delay={(g * 4 + i) * 100}
+                                >
+                                    <div
+                                        class="pain-card-bg"
+                                        aria-hidden="true"
+                                    >
+                                        <img
+                                            src={card.image}
+                                            alt=""
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    </div>
+
+                                    <div class="pain-card-head">
+                                        <h3 class="pain-card-title">
+                                            {card.title}
+                                        </h3>
+                                        <span class="pain-card-badge">
+                                            {card.badge}
+                                        </span>
+                                    </div>
+
+                                    <ul class="pain-card-list">
+                                        {card.items.map((item) => (
+                                            <li>{item}</li>
+                                        ))}
+                                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <p
+                            class="pain-group-label"
+                            data-reveal
+                            data-reveal-delay={g * 200 + 300}
+                        >
+                            {group.label}
+                        </p>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    /* ---------- 标题（右对齐） ---------- */
+    .pain-head {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-bottom: var(--space-lg);
+        text-align: right;
+    }
+
+    .pain-title {
+        font-size: clamp(2rem, 4.5vw, 4rem);
+    }
+
+    .pain-rule {
+        display: block;
+        width: min(100%, 820px);
+        height: 1px;
+        margin-block: var(--space-sm) 0.6rem;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .pain-subtitle {
+        font-family: var(--f-display);
+        font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+    }
+
+    /* ---------- 两组：按卡片数量分配宽度 ---------- */
+    .pain-groups {
+        display: grid;
+        grid-template-columns: 4fr 2fr;
+        gap: clamp(1.5rem, 4vw, 4rem);
+    }
+
+    .pain-group {
+        position: relative;
+        padding-bottom: 3.5rem;
+    }
+
+    /* 橙色托底横条：从卡片底部往下延伸 */
+    .pain-group::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: calc(3.5rem + 70px);
+        border-radius: 12px;
+        background: var(--c-orange);
+    }
+
+    .pain-group-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 3.5rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        color: var(--c-white);
+    }
+
+    /* 卡片排成一行 */
+    .pain-cards {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+        gap: clamp(0.75rem, 1.4vw, 1.25rem);
+    }
+
+    /* 卡片之间的白色虚线 */
+    .pain-cards::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 55%;
+        border-top: 3px dotted rgba(255, 255, 255, 0.85);
+        z-index: -1;
+    }
+
+    /* ---------- 单张卡片 ---------- */
+    .pain-card {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 420px;
+        padding: 1.1rem 0.9rem 6rem;
+        border-radius: 12px;
+        background: var(--c-white);
+        color: var(--c-ink);
+        transition:
+            transform 0.5s var(--ease),
+            box-shadow 0.5s var(--ease);
+    }
+
+    .pain-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    /* 底部淡化的照片 */
+    .pain-card-bg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 45%;
+    }
+
+    .pain-card-bg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.3;
+        transition:
+            opacity 0.6s var(--ease),
+            transform 1.2s var(--ease);
+    }
+
+    .pain-card-bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            var(--c-white) 0%,
+            rgba(255, 255, 255, 0) 60%
+        );
+    }
+
+    .pain-card:hover .pain-card-bg img {
+        opacity: 0.55;
+        transform: scale(1.05);
+    }
+
+    /* 标题 + 右上角大号橙色关键词 */
+    .pain-card-head {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 0.25rem;
+        min-height: 3rem;
+        margin-bottom: 0.75rem;
+    }
+    /* 标题和关键词都不换行，始终横向并排 */
+    .pain-card-title {
+        position: relative;
+        z-index: 1;
+        font-size: clamp(0.85rem, 1.1vw, 1rem);
+        font-weight: 800;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
+    .pain-card-badge {
+        flex-shrink: 0;
+        font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+        font-weight: 800;
+        line-height: 1;
+        white-space: nowrap;
+        color: var(--c-orange);
+        opacity: 0.85;
+    }
+
+    /* 法文关键词较长：缩小并放到标题上方 */
+    :global(html[lang="fr"]) .pain-card-head {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+    }
+
+    :global(html[lang="fr"]) .pain-card-badge {
+        font-size: clamp(0.95rem, 1.25vw, 1.3rem);
+        font-family: var(--f-display);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* 列表 */
+    .pain-card-list {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 0.25rem;
+        font-size: 0.8rem;
+        line-height: 1.55;
+    }
+
+    .pain-card-list li {
+        position: relative;
+        padding-left: 0.85rem;
+    }
+
+    .pain-card-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.65em;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--c-ink);
+    }
+
+    /* ---------- 平板：两组上下排列，卡片 2 列 ---------- */
+    @media (max-width: 1100px) {
+        .pain-groups {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .pain-cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .pain-cards::before {
+            display: none;
+        }
+
+        .pain-card {
+            min-height: 0;
+        }
+    }
+
+    /* ---------- 手机：单列 ---------- */
+    @media (max-width: 560px) {
+        .pain-head {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .pain-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .pain-card {
+            padding-bottom: 5rem;
+        }
+    }
+</style>

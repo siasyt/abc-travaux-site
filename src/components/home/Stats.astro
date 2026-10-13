@@ -1,0 +1,116 @@
+---
+// =========================================================
+// 数据条：16年 / 250+ / 50个 / 1千+（对应 PDF 第 2 页顶部）
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { home } from "../../i18n/pages/home";
+
+const lang = getLangFromUrl(Astro.url);
+const stats = home[lang].stats;
+---
+
+<section class="stats">
+    <div class="stats-bg" aria-hidden="true"></div>
+    <div class="container">
+        <ul class="stats-list">
+            {
+                stats.map((s, i) => (
+                    <li class="stat" data-reveal data-reveal-delay={i * 120}>
+                        <span
+                            class="stat-value"
+                            data-count={s.to}
+                            data-suffix={s.suffix}
+                            data-final={s.final}
+                        >
+                            {s.final}
+                        </span>
+                        <span class="stat-label">{s.label}</span>
+                    </li>
+                ))
+            }
+        </ul>
+    </div>
+</section>
+
+<script>
+    import "../../scripts/countup.ts";
+</script>
+
+<style>
+    .stats {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        min-height: 220px;
+        padding-block: var(--space-md);
+    }
+
+    /* 背景照片 + 暗色渐变，保证白字可读 */
+    .stats-bg {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(
+                90deg,
+                rgba(53, 43, 34, 0.55) 0%,
+                rgba(53, 43, 34, 0.2) 70%
+            ),
+            url("/images/hero/hero-interior.webp") center 60% / cover no-repeat;
+        transform: scale(1.05);
+        transition: transform 6s var(--ease);
+    }
+
+    .stats:hover .stats-bg {
+        transform: scale(1.1);
+    }
+
+    .stats .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats-list {
+        display: grid;
+        grid-template-columns: repeat(4, max-content);
+        gap: clamp(2rem, 5vw, 4.5rem);
+    }
+
+    .stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-family: var(--f-body);
+        font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+        font-weight: 700;
+        line-height: 1.1;
+        color: var(--c-orange);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+        margin-top: 0.25rem;
+        font-size: var(--fs-small);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--c-white);
+    }
+
+    html[lang="fr"] .stat-label {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.15em;
+    }
+
+    /* 手机端：2 × 2 */
+    @media (max-width: 768px) {
+        .stats-list {
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+        }
+    }
+</style>

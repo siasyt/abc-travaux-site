@@ -1,0 +1,228 @@
+---
+// =========================================================
+// OUR EXTERNAL STAKEHOLDERS.（对应 PDF 第 8 页）
+// 深棕底
+// 左：大标题（右对齐）+ 标语
+// 右：三组（客户 / 政府 / 供应商），每组 = 图片 + 标签 | 列表
+// =========================================================
+import { getLangFromUrl } from "../../i18n/ui";
+import { about } from "../../i18n/pages/about";
+
+const lang = getLangFromUrl(Astro.url);
+const c = about[lang].stakeholders;
+
+// 中文用全角冒号，法文用 " : "
+const sep = lang === "zh" ? "：" : " : ";
+---
+
+<section class="section section--dark stakeholders" id="stakeholders">
+    <span class="vertical-url">www.abc-travaux.com</span>
+
+    <div class="container">
+        <span class="eyebrow sh-eyebrow" data-reveal>{c.eyebrow}</span>
+
+        <div class="sh-grid">
+            <!-- ========== 左侧 ========== -->
+            <div class="sh-left">
+                <h2 class="display-title sh-title">
+                    {
+                        c.title.map((line, i) => (
+                            <span data-reveal data-reveal-delay={i * 120}>
+                                {line}
+                            </span>
+                        ))
+                    }
+                </h2>
+                <p class="sh-tagline" data-reveal data-reveal-delay="500">
+                    {c.tagline}
+                </p>
+            </div>
+
+            <!-- ========== 右侧三组 ========== -->
+            <ul class="sh-groups">
+                {
+                    c.groups.map((g, i) => (
+                        <li
+                            class="sh-group"
+                            data-reveal
+                            data-reveal-delay={i * 180}
+                        >
+                            <figure class="sh-media">
+                                <div class="sh-image">
+                                    <img
+                                        src={g.image}
+                                        alt=""
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </div>
+                                <figcaption class="sh-label">
+                                    {g.label}
+                                </figcaption>
+                            </figure>
+
+                            <ul class="sh-list">
+                                {g.items.map((item) => (
+                                    <li>
+                                        <strong>{item.name}</strong>
+                                        {item.text && (
+                                            <span>
+                                                {sep}
+                                                {item.text}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    ))
+                }
+            </ul>
+        </div>
+    </div>
+</section>
+
+<style>
+    .sh-eyebrow {
+        margin-bottom: var(--space-md);
+    }
+
+    .sh-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+        gap: clamp(2.5rem, 6vw, 6rem);
+        align-items: center;
+    }
+
+    /* ---------- 左侧 ---------- */
+    .sh-left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    .sh-title {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: clamp(2.5rem, 5vw, 4.25rem);
+        line-height: 1.05;
+    }
+
+    .sh-tagline {
+        margin-top: var(--space-md);
+        font-size: var(--fs-small);
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    /* ---------- 右侧 ---------- */
+    .sh-groups {
+        display: grid;
+        gap: var(--space-md);
+    }
+
+    .sh-group {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1.1fr);
+        gap: clamp(1rem, 2.5vw, 2rem);
+        align-items: start;
+    }
+
+    .sh-media {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .sh-image {
+        overflow: hidden;
+        width: 100%;
+        aspect-ratio: 5 / 2;
+        border-radius: 10px;
+    }
+
+    .sh-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1.2s var(--ease);
+    }
+
+    .sh-group:hover .sh-image img {
+        transform: scale(1.06);
+    }
+
+    /* 图片下方的英文标签 */
+    .sh-label {
+        margin-top: 0.4rem;
+        font-family: var(--f-display);
+        font-size: clamp(1rem, 1.6vw, 1.3rem);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    /* 列表：橙色小圆点 */
+    .sh-list {
+        display: grid;
+        gap: 0.2rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .sh-list li {
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    .sh-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.7em;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--c-orange);
+    }
+
+    .sh-list strong {
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+
+    .sh-list span {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* 客户那一组：品牌名大写 */
+    .sh-group:first-child .sh-list strong {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+
+    /* ---------- 平板 / 手机 ---------- */
+    @media (max-width: 1024px) {
+        .sh-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sh-left,
+        .sh-title {
+            align-items: flex-start;
+            text-align: left;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .sh-group {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .sh-media {
+            align-items: flex-start;
+        }
+    }
+</style>
