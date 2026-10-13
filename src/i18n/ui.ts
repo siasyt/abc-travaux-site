@@ -80,10 +80,11 @@ export function useTranslations(lang: Lang) {
     };
 }
 
-/** 生成某语言下的链接：localePath("zh", "services") → "/zh/services" */
+/** 生成某语言下的链接：localePath("zh", "services") → "/zh/services/"
+ *  末尾统一带斜杠，和 sitemap、canonical 保持一致，避免多一次跳转 */
 export function localePath(lang: Lang, path = ""): string {
     const clean = path.replace(/^\/+|\/+$/g, "");
-    return clean ? `/${lang}/${clean}` : `/${lang}/`;
+    return clean ? `/${lang}/${clean}/` : `/${lang}/`;
 }
 
 /** 切换语言时，保留当前页面，只替换语言前缀 */
