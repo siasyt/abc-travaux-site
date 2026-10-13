@@ -43,6 +43,8 @@ export const ui = {
         "footer.contact": "Contact",
         "footer.follow": "WeChat",
         "footer.rights": "Tous droits réservés.",
+        "footer.legal": "Mentions légales",
+        "footer.privacy": "Politique de confidentialité",
     },
     zh: {
         "meta.title": "ABC Travaux — 法国华人一体化建筑服务商",
@@ -61,6 +63,8 @@ export const ui = {
         "footer.contact": "联系方式",
         "footer.follow": "微信",
         "footer.rights": "版权所有。",
+        "footer.legal": "法律声明",
+        "footer.privacy": "隐私政策",
     },
 } as const;
 

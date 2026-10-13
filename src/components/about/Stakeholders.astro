@@ -65,7 +65,7 @@ const sep = lang === "zh" ? "：" : " : ";
                                 {g.items.map((item) => (
                                     <li>
                                         <strong>{item.name}</strong>
-                                        {item.text && (
+                                        {"text" in item && (
                                             <span>
                                                 {sep}
                                                 {item.text}

@@ -1,0 +1,163 @@
+---
+// =========================================================
+// 法律类页面通用模板（法律声明 / 隐私政策）
+// 左侧：标题 + 更新日期（滚动时固定）
+// 右侧：各章节内容
+// =========================================================
+import type { LegalPageText } from "../../i18n/pages/legal";
+
+interface Props {
+    page: LegalPageText;
+}
+
+const { page } = Astro.props;
+---
+
+<section class="section legal">
+    <span class="watermark legal-watermark" aria-hidden="true">ABC</span>
+
+    <div class="container legal-grid">
+        <!-- 左侧标题 -->
+        <header class="legal-head">
+            <span class="eyebrow">{page.eyebrow}</span>
+            <h1 class="display-title legal-title">{page.title}</h1>
+            <span class="legal-rule" aria-hidden="true"></span>
+            <p class="legal-updated">{page.updated}</p>
+            {page.note && <p class="legal-note">{page.note}</p>}
+        </header>
+
+        <!-- 右侧内容 -->
+        <div class="legal-body">
+            {
+                page.sections.map((s) => (
+                    <article class="legal-section">
+                        <h2>{s.title}</h2>
+                        <div class="legal-content" set:html={s.html} />
+                    </article>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .legal-watermark {
+        right: -3rem;
+        top: -2rem;
+    }
+
+    .legal-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+        gap: clamp(2.5rem, 6vw, 6rem);
+        align-items: start;
+    }
+
+    /* ---------- 左侧：滚动时固定 ---------- */
+    .legal-head {
+        position: sticky;
+        top: calc(80px + var(--space-md));
+    }
+
+    .legal-title {
+        margin-top: var(--space-sm);
+        font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+        line-height: 1.05;
+    }
+
+    .legal-rule {
+        display: block;
+        height: 1px;
+        margin-block: var(--space-sm);
+        background: var(--c-ink);
+    }
+
+    .legal-updated {
+        font-size: var(--fs-small);
+        font-style: italic;
+        color: var(--c-grey);
+    }
+
+    .legal-note {
+        margin-top: var(--space-sm);
+        padding: 0.9rem 1rem;
+        border-left: 2px solid var(--c-orange);
+        background: var(--c-watermark);
+        font-size: var(--fs-small);
+        line-height: 1.7;
+    }
+
+    /* ---------- 右侧内容 ---------- */
+    .legal-body {
+        display: grid;
+        gap: var(--space-md);
+        max-width: 760px;
+    }
+
+    .legal-section {
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--c-line);
+    }
+
+    .legal-section:last-child {
+        border-bottom: none;
+    }
+
+    .legal-section h2 {
+        margin-bottom: 0.75rem;
+        font-family: var(--f-display);
+        font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+    .legal-content {
+        font-size: 0.95rem;
+        line-height: 1.85;
+    }
+
+    .legal-content :global(p + p),
+    .legal-content :global(p + ul),
+    .legal-content :global(ul + p) {
+        margin-top: 0.75rem;
+    }
+
+    .legal-content :global(ul) {
+        display: grid;
+        gap: 0.3rem;
+    }
+
+    .legal-content :global(li) {
+        position: relative;
+        padding-left: 1.1rem;
+    }
+
+    .legal-content :global(li)::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.8em;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--c-orange);
+    }
+
+    .legal-content :global(a) {
+        color: var(--c-orange-deep);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    /* ---------- 平板 / 手机 ---------- */
+    @media (max-width: 900px) {
+        .legal-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-lg);
+        }
+
+        .legal-head {
+            position: static;
+        }
+    }
+</style>

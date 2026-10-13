@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LegalPage from "../../components/legal/LegalPage.astro";
+import { privacy } from "../../i18n/pages/legal";
+
+const page = privacy.fr;
+---
+
+<BaseLayout title={page.meta.title} description={page.meta.description}>
+    <LegalPage page={page} />
+</BaseLayout>

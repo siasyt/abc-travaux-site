@@ -244,13 +244,26 @@ const hasKey = WEB3FORMS_ACCESS_KEY.trim() !== "";
 </section>
 
 <!-- ========== 地图 ========== -->
-<section class="contact-map" aria-label={c.info.address}>
-    <iframe
-        src={mapSrc}
-        title={fullAddress}
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        allowfullscreen></iframe>
+<!-- ========== 地图：点击后才加载（加载前不会设置任何 Google Cookie） ========== -->
+<section
+    class="contact-map"
+    aria-label={c.info.address}
+    data-map
+    data-src={mapSrc}
+    data-title={fullAddress}
+>
+    <div class="map-placeholder">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"
+            ></path>
+            <circle cx="12" cy="9.5" r="2.5"></circle>
+        </svg>
+        <p class="map-address">{fullAddress}</p>
+        <p class="map-notice">{c.map.notice}</p>
+        <button type="button" class="btn btn--primary" data-map-load
+            >{c.map.button}</button
+        >
+    </div>
 </section>
 
 <!-- hCaptcha 脚本：只有配置了密钥才加载 -->
@@ -418,6 +431,19 @@ const hasKey = WEB3FORMS_ACCESS_KEY.trim() !== "";
     }
 
     initContactForm();
+
+    // 地图：点击按钮后才插入 Google 地图
+    const mapBox = document.querySelector<HTMLElement>("[data-map]");
+    mapBox?.querySelector("[data-map-load]")?.addEventListener("click", () => {
+        const iframe = document.createElement("iframe");
+        iframe.src = mapBox.dataset.src ?? "";
+        iframe.title = mapBox.dataset.title ?? "";
+        iframe.loading = "lazy";
+        iframe.referrerPolicy = "no-referrer-when-downgrade";
+        iframe.allowFullscreen = true;
+        mapBox.replaceChildren(iframe);
+        mapBox.classList.add("is-loaded");
+    });
 </script>
 
 <style>
@@ -668,7 +694,42 @@ const hasKey = WEB3FORMS_ACCESS_KEY.trim() !== "";
         border-top: 1px solid var(--c-orange);
     }
 
-    .contact-map iframe {
+    /* 加载前的占位：浅色底 + 地址 + 按钮 */
+    .map-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        height: 100%;
+        padding: var(--space-md);
+        background: var(--c-watermark);
+        text-align: center;
+    }
+
+    .map-placeholder svg {
+        width: 44px;
+        height: 44px;
+        fill: none;
+        stroke: var(--c-orange-deep);
+        stroke-width: 1.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .map-address {
+        font-family: var(--f-display);
+        font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+        letter-spacing: 0.04em;
+    }
+
+    .map-notice {
+        max-width: 520px;
+        font-size: 0.8rem;
+        color: var(--c-grey);
+    }
+
+    .contact-map :global(iframe) {
         display: block;
         width: 100%;
         height: 100%;
@@ -677,7 +738,7 @@ const hasKey = WEB3FORMS_ACCESS_KEY.trim() !== "";
         transition: filter 0.6s var(--ease);
     }
 
-    .contact-map:hover iframe {
+    .contact-map:hover :global(iframe) {
         filter: none;
     }
 

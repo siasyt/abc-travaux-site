@@ -13,6 +13,10 @@ export const contact = {
         eyebrow: "Contact",
         title: ["Let's Build", "Together."],
         lead: "Parlez-nous de votre projet : nous revenons vers vous sous 48\u00a0h avec une première estimation.",
+        map: {
+            notice: "La carte est fournie par Google Maps. En l'affichant, vous acceptez que Google dépose des cookies.",
+            button: "Afficher la carte",
+        },
         info: {
             address: "Adresse",
             phone: "Téléphone",
@@ -60,6 +64,10 @@ export const contact = {
         eyebrow: "Contact",
         title: ["Let's Build", "Together."],
         lead: "告诉我们您的项目，我们将在 48 小时内回复并提供初步评估。",
+        map: {
+            notice: "地图由 Google 地图提供。点击显示地图，即表示您同意 Google 设置相关 Cookie。",
+            button: "显示地图",
+        },
         info: {
             address: "地址",
             phone: "电话",

@@ -117,8 +117,16 @@ const navItems: { key: UiKey; path: string }[] = [
 
     <!-- 底部版权 -->
     <div class="container footer-bottom">
-        <span>© {year} ABC Travaux Ltd. {t("footer.rights")}</span>
-        <span class="footer-url">www.abc-travaux.com</span>
+        <span>© {year} ABC Travaux. {t("footer.rights")}</span>
+        <nav class="footer-legal" aria-label={t("footer.legal")}>
+            <a href={localePath(lang, "mentions-legales")}
+                >{t("footer.legal")}</a
+            >
+            <span aria-hidden="true">·</span>
+            <a href={localePath(lang, "confidentialite")}
+                >{t("footer.privacy")}</a
+            >
+        </nav>
     </div>
 </footer>
 
@@ -222,8 +230,18 @@ const navItems: { key: UiKey; path: string }[] = [
         color: var(--c-grey);
     }
 
-    .footer-url {
-        letter-spacing: 0.25em;
+    .footer-legal {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .footer-legal a {
+        transition: color 0.3s var(--ease);
+    }
+
+    .footer-legal a:hover {
+        color: var(--c-orange-deep);
     }
 
     /* 响应式 */
