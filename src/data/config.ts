@@ -5,4 +5,4 @@
 // 联系表单：Web3Forms 密钥（https://web3forms.com 用老板邮箱免费申请）
 // 留空时：点击"发送"会打开访客的邮件软件，内容已自动填好
 // 填写后：表单直接在网页上发送到老板邮箱
-export const WEB3FORMS_ACCESS_KEY = "";
+export const WEB3FORMS_ACCESS_KEY = "d455ddb2-6f34-4c75-b99d-83e6237ca092";
