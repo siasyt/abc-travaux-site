@@ -4,6 +4,12 @@
 // 左：标题 + 引言 + 联系方式（地址 / 电话 / 邮箱 / 微信）
 // 右：报价表单
 // 下：地图
+//
+// 防垃圾信息（4 层）：
+//   1. 蜜罐字段：机器人会勾选隐藏的勾选框
+//   2. hCaptcha 人机验证（填了 Web3Forms 密钥后才启用）
+//   3. 填写时间检测：打开页面不到 3 秒就提交的视为机器人
+//   4. 字数上限 + 项目描述最多 2 个链接 + 发送后 60 秒内不能重复提交
 // =========================================================
 import { getLangFromUrl, site } from "../../i18n/ui";
 import { contact } from "../../i18n/pages/contact";
@@ -16,6 +22,9 @@ const f = c.form;
 const fullAddress = `${site.address.street}, ${site.address.city}, ${site.address.country}`;
 const mapSrc = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`;
 const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+
+// 是否已经配置了 Web3Forms（配置后才显示人机验证）
+const hasKey = WEB3FORMS_ACCESS_KEY.trim() !== "";
 ---
 
 <section class="section contact" id="contact">
@@ -100,6 +109,9 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
             data-msg-success={f.success}
             data-msg-error={f.error}
             data-msg-mailto={f.mailtoNotice}
+            data-msg-captcha={f.captchaRequired}
+            data-msg-links={f.tooManyLinks}
+            data-msg-wait={f.wait}
             data-reveal
             data-reveal-delay="200"
             novalidate
@@ -123,6 +135,7 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                         type="text"
                         name="name"
                         autocomplete="name"
+                        maxlength="80"
                         required
                     />
                 </label>
@@ -132,6 +145,7 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                         type="text"
                         name="company"
                         autocomplete="organization"
+                        maxlength="100"
                     />
                 </label>
             </div>
@@ -143,12 +157,18 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                         type="email"
                         name="email"
                         autocomplete="email"
+                        maxlength="120"
                         required
                     />
                 </label>
                 <label class="field">
                     <span>{f.phone}</span>
-                    <input type="tel" name="phone" autocomplete="tel" />
+                    <input
+                        type="tel"
+                        name="phone"
+                        autocomplete="tel"
+                        maxlength="30"
+                    />
                 </label>
             </div>
 
@@ -172,6 +192,7 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                         type="text"
                         name="location"
                         autocomplete="address-level2"
+                        maxlength="80"
                     />
                 </label>
             </div>
@@ -182,6 +203,8 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                     name="message"
                     rows="5"
                     placeholder={f.messagePlaceholder}
+                    minlength="10"
+                    maxlength="3000"
                     required></textarea>
             </label>
 
@@ -189,6 +212,18 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                 <input type="checkbox" name="consent" required />
                 <span>{f.consent} <span class="req">*</span></span>
             </label>
+
+            <!-- hCaptcha 人机验证（由 Web3Forms 提供，免费） -->
+            {
+                hasKey && (
+                    <div
+                        class="h-captcha"
+                        data-captcha="true"
+                        data-theme="dark"
+                        data-lang={lang === "zh" ? "zh-CN" : "fr"}
+                    />
+                )
+            }
 
             <button type="submit" class="btn btn--primary form-submit">
                 <span data-submit-label>{f.submit}</span>
@@ -218,7 +253,24 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
         allowfullscreen></iframe>
 </section>
 
+<!-- hCaptcha 脚本：只有配置了密钥才加载 -->
+{
+    hasKey && (
+        <script
+            is:inline
+            src="https://web3forms.com/client/script.js"
+            async
+            defer
+        />
+    )
+}
+
 <script>
+    const MIN_FILL_MS = 3000; // 少于 3 秒提交 = 机器人
+    const MAX_LINKS = 2; // 项目描述最多允许的链接数
+    const COOLDOWN_MS = 60_000; // 两次提交之间至少间隔 60 秒
+    const STORAGE_KEY = "abc-contact-last-sent";
+
     function initContactForm() {
         const form = document.querySelector<HTMLFormElement>(
             "[data-contact-form]",
@@ -231,6 +283,23 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
             form.querySelector<HTMLButtonElement>(".form-submit")!;
         const d = form.dataset;
         const defaultLabel = label.textContent ?? "";
+        const openedAt = Date.now(); // 页面打开的时间
+
+        // 读取 / 记录上次发送时间（浏览器禁止存储时不报错）
+        const getLastSent = () => {
+            try {
+                return Number(sessionStorage.getItem(STORAGE_KEY) ?? 0);
+            } catch {
+                return 0;
+            }
+        };
+        const setLastSent = () => {
+            try {
+                sessionStorage.setItem(STORAGE_KEY, String(Date.now()));
+            } catch {
+                /* 忽略 */
+            }
+        };
 
         const setStatus = (text: string, type: "ok" | "err" | "" = "") => {
             status.textContent = text;
@@ -248,7 +317,20 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
             }
 
             const data = new FormData(form);
-            if (data.get("botcheck")) return; // 机器人
+
+            // 防护 1：蜜罐被勾选 → 机器人，假装成功，什么都不发
+            // 防护 3：打开页面不到 3 秒就提交 → 机器人，同样假装成功
+            if (data.get("botcheck") || Date.now() - openedAt < MIN_FILL_MS) {
+                form.reset();
+                setStatus(d.msgSuccess ?? "", "ok");
+                return;
+            }
+
+            // 防护 4：60 秒内重复提交
+            if (Date.now() - getLastSent() < COOLDOWN_MS) {
+                setStatus(d.msgWait ?? "", "err");
+                return;
+            }
 
             const fields = {
                 name: String(data.get("name") ?? ""),
@@ -257,8 +339,15 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                 phone: String(data.get("phone") ?? ""),
                 project_type: String(data.get("project_type") ?? ""),
                 location: String(data.get("location") ?? ""),
-                message: String(data.get("message") ?? ""),
+                message: String(data.get("message") ?? "").trim(),
             };
+
+            // 防护 4：链接太多（垃圾广告的典型特征）
+            const links = fields.message.match(/(https?:\/\/|www\.)/gi) ?? [];
+            if (links.length > MAX_LINKS) {
+                setStatus(d.msgLinks ?? "", "err");
+                return;
+            }
 
             // ---------- 还没有密钥：打开访客的邮件软件 ----------
             if (!d.key) {
@@ -274,11 +363,22 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                     .join("\n");
 
                 setStatus(d.msgMailto ?? "", "ok");
+                setLastSent();
                 window.location.href = `mailto:${d.to}?subject=${encodeURIComponent(d.subject ?? "")}&body=${encodeURIComponent(body)}`;
                 return;
             }
 
             // ---------- 有密钥：通过 Web3Forms 直接发送 ----------
+
+            // 防护 2：hCaptcha 必须完成
+            const captcha = form.querySelector<HTMLTextAreaElement>(
+                "textarea[name=h-captcha-response]",
+            );
+            if (!captcha || !captcha.value) {
+                setStatus(d.msgCaptcha ?? "", "err");
+                return;
+            }
+
             submitBtn.disabled = true;
             label.textContent = d.msgSending ?? "";
             setStatus("");
@@ -296,6 +396,7 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
                         from_name: "ABC Travaux — Site web",
                         replyto: fields.email,
                         ...fields,
+                        "h-captcha-response": captcha.value,
                     }),
                 });
                 const json = await res.json();
@@ -303,12 +404,15 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
 
                 form.reset();
                 form.classList.remove("was-validated");
+                setLastSent();
                 setStatus(d.msgSuccess ?? "", "ok");
             } catch {
                 setStatus(d.msgError ?? "", "err");
             } finally {
                 submitBtn.disabled = false;
                 label.textContent = defaultLabel;
+                // 每次提交后重置人机验证，下一次需要重新验证
+                (window as any).hcaptcha?.reset?.();
             }
         });
     }
@@ -500,6 +604,11 @@ const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
         height: 18px;
         margin-top: 0.15rem;
         accent-color: var(--c-orange-deep);
+    }
+
+    /* hCaptcha 验证框 */
+    .h-captcha {
+        min-height: 78px;
     }
 
     .form-submit {
