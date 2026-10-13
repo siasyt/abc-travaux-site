@@ -28,4 +28,6 @@ export const partners: Partner[] = [
     { name: "Na-Young", logo: "/images/partners/na-young.png" },
     { name: "Café Petibon", logo: "/images/partners/cafe-petibon.png" },
     { name: "KUPBAP", logo: "/images/partners/kupbap.png" },
+    { name: "Chabaidao", logo: "/images/partners/chabaidao.png" },
+    { name: "Nouvelles d'Europe", logo: "/images/partners/nouvelles-europe.png" },
 ];
